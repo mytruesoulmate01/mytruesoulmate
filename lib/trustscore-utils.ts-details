@@ -1,0 +1,124 @@
+export interface TrustScoreData {
+  name?: "verified" | "not_verified" | "pending"
+  phone?: "verified" | "not_verified" | "pending"
+  // Note: Reduced from comprehensive JSON fields to database-available fields only
+}
+
+export interface TrustScoreStats {
+  totalItems: number
+  verifiedItems: number
+  percentage: number
+}
+
+export interface TrustScoreItem {
+  key: string
+  displayName: string
+  status: "verified" | "not_verified" | "pending"
+  score: number
+}
+
+export function calculateTrustScore(trustScoreData: TrustScoreData): TrustScoreStats {
+  const items = Object.entries(trustScoreData)
+  const totalItems = items.length
+  const verifiedItems = items.filter(([_, status]) => status === "verified").length
+  const percentage = totalItems > 0 ? Math.round((verifiedItems / totalItems) * 100) : 0
+
+  return {
+    totalItems,
+    verifiedItems,
+    percentage,
+  }
+}
+
+export function formatTrustScoreItem(key: string): string {
+  // Convert snake_case to Title Case
+  return key
+    .split("_")
+    .map((word) => word.toUpperCase())
+    .join(" ")
+}
+
+export function getTrustScoreProperties(status: "verified" | "not_verified" | "pending") {
+  switch (status) {
+    case "verified":
+      return {
+        label: "VERIFIED",
+        color: "text-green-700",
+        bgColor: "bg-green-100",
+        borderColor: "border-green-300",
+        score: 1,
+        scoreColor: "text-green-600",
+        scoreBg: "bg-green-50",
+        iconColor: "text-green-600",
+        description: "Document successfully verified",
+      }
+    case "pending":
+      return {
+        label: "PENDING",
+        color: "text-amber-700",
+        bgColor: "bg-amber-100",
+        borderColor: "border-amber-300",
+        score: 0,
+        scoreColor: "text-amber-600",
+        scoreBg: "bg-amber-50",
+        iconColor: "text-amber-600",
+        description: "Verification in progress",
+      }
+    case "not_verified":
+      return {
+        label: "NOT VERIFIED",
+        color: "text-red-700",
+        bgColor: "bg-red-100",
+        borderColor: "border-red-300",
+        score: 0,
+        scoreColor: "text-red-600",
+        scoreBg: "bg-red-50",
+        iconColor: "text-red-600",
+        description: "Verification not started",
+      }
+    default:
+      return {
+        label: "UNKNOWN",
+        color: "text-gray-700",
+        bgColor: "bg-gray-100",
+        borderColor: "border-gray-300",
+        score: 0,
+        scoreColor: "text-gray-600",
+        scoreBg: "bg-gray-50",
+        iconColor: "text-gray-600",
+        description: "Status unknown",
+      }
+  }
+}
+
+/**
+ * Sanitize trustscore status values from database
+ */
+export function sanitizeTrustScoreStatus(status: string | null): "verified" | "not_verified" | "pending" {
+  if (status === "verified" || status === "pending") {
+    return status
+  }
+  return "not_verified"
+}
+
+/**
+ * Map database trustscore data to frontend format
+ */
+export function mapDatabaseToTrustScore(dbData: {
+  trustscore_name: string | null
+  trustscore_phone: string | null
+}): TrustScoreData {
+  return {
+    name: sanitizeTrustScoreStatus(dbData.trustscore_name),
+    phone: sanitizeTrustScoreStatus(dbData.trustscore_phone),
+  }
+}
+
+export function processTrustScoreData(trustScoreData: TrustScoreData): TrustScoreItem[] {
+  return Object.entries(trustScoreData).map(([key, status]) => ({
+    key,
+    displayName: formatTrustScoreItem(key),
+    status,
+    score: getTrustScoreProperties(status).score,
+  }))
+}

@@ -1,0 +1,127 @@
+// Updated to work with database-sourced verification data
+// Supports data from docs_trustscore_details table
+// Maintains backward compatibility with existing frontend components
+
+export interface DocumentStatus {
+  [key: string]: "verified" | "pending" | "not_verified"
+}
+
+export interface VerificationStats {
+  total: number
+  verified: number
+  pending: number
+  notVerified: number
+  percentage: number
+}
+
+/**
+ * Calculate verification statistics from document data
+ */
+export function calculateVerificationStats(documents: DocumentStatus): VerificationStats {
+  const entries = Object.entries(documents)
+  const total = entries.length
+
+  const verified = entries.filter(([_, status]) => status === "verified").length
+  const pending = entries.filter(([_, status]) => status === "pending").length
+  const notVerified = entries.filter(([_, status]) => status === "not_verified").length
+
+  const percentage = total > 0 ? Math.round((verified / total) * 100) : 0
+
+  return {
+    total,
+    verified,
+    pending,
+    notVerified,
+    percentage,
+  }
+}
+
+/**
+ * Format document key to display name
+ */
+export function formatDocumentName(key: string): string {
+  const documentNames: { [key: string]: string } = {
+    pan_card: "PAN CARD",
+    aadhaar_card: "AADHAAR CARD",
+    passport: "PASSPORT",
+    driving_license: "DRIVING LICENSE",
+    voter_id: "VOTER ID",
+    birth_certificate: "BIRTH CERTIFICATE",
+    marriage_certificate: "MARRIAGE CERTIFICATE",
+    income_certificate: "INCOME CERTIFICATE",
+  }
+
+  // Return predefined name or convert snake_case to Title Case
+  return (
+    documentNames[key] ||
+    key
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
+  )
+}
+
+/**
+ * Get status display properties
+ */
+export function getStatusProperties(status: string) {
+  switch (status) {
+    case "verified":
+      return {
+        label: "VERIFIED",
+        bgColor: "bg-green-50 border-green-200",
+        textColor: "text-green-800",
+        badgeColor: "bg-green-100 text-green-800",
+        icon: "check",
+        description: "Document successfully verified",
+      }
+    case "pending":
+      return {
+        label: "PENDING",
+        bgColor: "bg-yellow-50 border-yellow-200",
+        textColor: "text-yellow-800",
+        badgeColor: "bg-yellow-100 text-yellow-800",
+        icon: "clock",
+        description: "Verification in progress",
+      }
+    case "not_verified":
+    default:
+      return {
+        label: "NOT VERIFIED",
+        bgColor: "bg-gray-50 border-gray-200",
+        textColor: "text-gray-600",
+        badgeColor: "bg-gray-100 text-gray-600",
+        icon: "clock",
+        description: "Verification not started",
+      }
+  }
+}
+
+/**
+ * Validate and sanitize database verification status
+ */
+export function sanitizeVerificationStatus(status: string | null): "verified" | "pending" | "not_verified" {
+  const validStatuses = ["verified", "pending", "not_verified"]
+
+  if (!status || !validStatuses.includes(status)) {
+    return "not_verified"
+  }
+
+  return status as "verified" | "pending" | "not_verified"
+}
+
+/**
+ * Map database columns to document keys
+ */
+export function mapDatabaseToDocuments(dbRecord: {
+  doc_pan_card: string | null
+  doc_aadhaar_card: string | null
+  trustscore_name: string | null
+  trustscore_phone: string | null
+}): DocumentStatus {
+  return {
+    pan_card: sanitizeVerificationStatus(dbRecord.doc_pan_card),
+    aadhaar_card: sanitizeVerificationStatus(dbRecord.doc_aadhaar_card),
+    passport: "not_verified", // Not in database yet
+  }
+}
