@@ -111,6 +111,25 @@ export function validateGender(gender: string): string | null {
 }
 
 /**
+ * Validate OTP format
+ * @param otp The OTP to validate
+ * @returns An error message if invalid, null if valid
+ */
+export function validateOTP(otp: string): string | null {
+  if (!otp) {
+    return "Verification code is required"
+  }
+
+  // Check if OTP is exactly 6 digits
+  const otpRegex = /^\d{6}$/
+  if (!otpRegex.test(otp)) {
+    return "Verification code must be exactly 6 digits"
+  }
+
+  return null
+}
+
+/**
  * Sanitize email address
  * @param email The email to sanitize
  * @returns The sanitized email

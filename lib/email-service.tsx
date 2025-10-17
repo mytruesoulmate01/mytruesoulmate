@@ -466,11 +466,7 @@ export async function sendPasswordResetConfirmationEmail(email: string, ipAddres
   }
 }
 
-export async function sendVerificationEmail(
-  email: string,
-  verificationToken: string,
-  ipAddress = "unknown",
-): Promise<EmailResult> {
+export async function sendVerificationEmail(email: string, otp: string, ipAddress = "unknown"): Promise<EmailResult> {
   logger.startTimer("email-service", "verification")
 
   try {
@@ -527,16 +523,14 @@ export async function sendVerificationEmail(
       }
     }
 
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${verificationToken}`
     const senderEmail = process.env.RESEND_SENDER_EMAIL
 
     logger.info(
       "email-service",
-      "Sending verification email",
+      "Sending verification email with OTP",
       {
         to: email,
         from: senderEmail,
-        verificationUrl: verificationUrl.replace(verificationToken, "[REDACTED]"),
         ipAddress,
       },
       "sending-verification-email",
@@ -565,13 +559,18 @@ export async function sendVerificationEmail(
             
             <p>Hello,</p>
             
-            <p>Thank you for signing up for MyTrueSoulMate! To complete your registration and start finding your soulmate, please verify your email address by clicking the button below:</p>
+            <p>Thank you for signing up for MyTrueSoulMate! To complete your registration and start finding your soulmate, please enter the verification code below in the app:</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+              <div style="background: #f8f9fa; border: 2px dashed #667eea; border-radius: 10px; padding: 20px; display: inline-block;">
+                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px; font-weight: bold;">YOUR VERIFICATION CODE</p>
+                <p style="margin: 0; font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</p>
+              </div>
             </div>
             
-            <p>This link will expire in 24 hours for security reasons.</p>
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #856404; font-weight: bold;">⏰ This code expires in 10 minutes</p>
+            </div>
             
             <p>Once verified, you'll be able to:</p>
             <ul style="color: #555;">
@@ -582,13 +581,6 @@ export async function sendVerificationEmail(
             </ul>
             
             <p>If you didn't create an account with MyTrueSoulMate, please ignore this email.</p>
-            
-            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-              <p style="font-size: 14px; color: #666;">
-                If the button doesn't work, copy and paste this link into your browser:<br>
-                <a href="${verificationUrl}" style="color: #667eea; word-break: break-all;">${verificationUrl}</a>
-              </p>
-            </div>
             
             <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #999;">
               <p>This email was sent from MyTrueSoulMate</p>
@@ -603,11 +595,11 @@ export async function sendVerificationEmail(
         
         Hello,
         
-        Thank you for signing up for MyTrueSoulMate! To complete your registration and start finding your soulmate, please verify your email address by clicking the link below:
+        Thank you for signing up for MyTrueSoulMate! To complete your registration and start finding your soulmate, please enter the verification code below in the app:
         
-        ${verificationUrl}
+        YOUR VERIFICATION CODE: ${otp}
         
-        This link will expire in 24 hours for security reasons.
+        ⏰ This code expires in 10 minutes
         
         Once verified, you'll be able to:
         - Access your account

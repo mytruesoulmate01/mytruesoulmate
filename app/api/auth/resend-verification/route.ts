@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { sendVerificationEmail } from "@/lib/email-service"
 import { sanitizeEmail, validateEmail } from "@/lib/validation"
-import { randomBytes } from "crypto"
+import { generateOTP } from "@/lib/otp-service"
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         user_id,
         email_id,
         email_verified,
-        email_verification_sent_at
+        otp_expires_at
       FROM user_registration
       WHERE email_id = ${sanitizedEmail}
       LIMIT 1
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: true,
-          message: "If an account exists with this email, a verification link has been sent.",
+          message: "If an account exists with this email, a verification code has been sent.",
         },
         { status: 200 },
       )
@@ -57,41 +57,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check rate limiting (must wait 5 minutes between resends)
-    if (user.email_verification_sent_at) {
-      const sentAt = new Date(user.email_verification_sent_at)
+    if (user.otp_expires_at) {
+      const expiresAt = new Date(user.otp_expires_at)
       const now = new Date()
-      const minutesSinceSent = (now.getTime() - sentAt.getTime()) / (1000 * 60)
+      // OTP is valid for 10 minutes, so if less than 5 minutes have passed since it was sent, rate limit
+      const timeSinceSent = now.getTime() - (expiresAt.getTime() - 10 * 60 * 1000)
+      const minutesSinceSent = timeSinceSent / (1000 * 60)
 
       if (minutesSinceSent < 5) {
         const remainingMinutes = Math.ceil(5 - minutesSinceSent)
         return NextResponse.json(
           {
             error: "RATE_LIMITED",
-            message: `Please wait ${remainingMinutes} minute(s) before requesting another verification email.`,
+            message: `Please wait ${remainingMinutes} minute(s) before requesting another verification code.`,
           },
           { status: 429 },
         )
       }
     }
 
-    // Generate new token
-    const verificationToken = randomBytes(32).toString("hex")
+    const otp = generateOTP()
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
 
-    // Update token in database
     await sql`
       UPDATE user_registration
       SET 
-        email_verification_token = ${verificationToken},
-        email_verification_sent_at = NOW()
+        email_verification_otp = ${otp},
+        otp_expires_at = ${expiresAt.toISOString()}
       WHERE user_id = ${user.user_id}
     `
 
-    console.log("[v0] New verification token generated", { userId: user.user_id })
+    console.log("[v0] New OTP generated", { userId: user.user_id })
 
-    // Send verification email
     const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-    const emailResult = await sendVerificationEmail(sanitizedEmail, verificationToken, clientIP)
+    const emailResult = await sendVerificationEmail(sanitizedEmail, otp, clientIP)
 
     if (!emailResult.success) {
       console.error("[v0] Failed to send verification email", { error: emailResult.error })
@@ -110,7 +109,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Verification email sent. Please check your inbox.",
+        message: "Verification code sent. Please check your inbox.",
       },
       { status: 200 },
     )
@@ -120,7 +119,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "RESEND_FAILED",
-        message: "Failed to resend verification email. Please try again.",
+        message: "Failed to resend verification code. Please try again.",
       },
       { status: 500 },
     )

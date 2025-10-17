@@ -4,12 +4,13 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { signupAction } from "./actions"
 
 type SignupResult = {
@@ -20,6 +21,7 @@ type SignupResult = {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,9 +31,6 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [registrationSuccess, setRegistrationSuccess] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
-  const [registeredEmail, setRegisteredEmail] = useState("")
 
   const passwordValidation = {
     minLength: formData.password.length >= 8,
@@ -93,35 +92,13 @@ export default function SignupPage() {
       if (result?.error) {
         setErrors({ submit: result.error })
       } else if (result?.success) {
-        setRegistrationSuccess(true)
-        setSuccessMessage(result.message || "Registration successful!")
-        setRegisteredEmail(result.email || formData.email)
+        router.push(`/verify-email?email=${encodeURIComponent(result.email || formData.email)}`)
       }
     } catch (error) {
       setErrors({ submit: "An unexpected error occurred. Please try again." })
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (registrationSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-green-50">
-        <div className="max-w-md p-8 bg-white rounded shadow text-center">
-          <CheckCircle className="mx-auto text-green-600 mb-4" />
-          <h1 className="text-xl font-bold text-green-800">Registration Successful!</h1>
-          <p>{successMessage}</p>
-          <Link href="/login">
-            <Button className="mt-4 w-full bg-green-600 hover:bg-green-700">Go to Login</Button>
-          </Link>
-          <Link href="/">
-            <Button variant="outline" className="mt-2 w-full bg-transparent">
-              Return to Home
-            </Button>
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (

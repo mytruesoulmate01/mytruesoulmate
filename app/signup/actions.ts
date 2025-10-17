@@ -4,7 +4,7 @@ import { sql } from "@/lib/db"
 import { hashPassword } from "@/lib/password-security"
 import { sanitizeEmail } from "@/lib/validation"
 import { sendVerificationEmail } from "@/lib/email-service"
-import { randomBytes } from "crypto"
+import { generateOTP, getOTPExpirationTime } from "@/lib/otp-service"
 
 export type SignupResult = {
   success?: boolean
@@ -52,8 +52,12 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
       sanitized: sanitizedEmail,
     })
 
-    const verificationToken = randomBytes(32).toString("hex")
-    console.log("🟢 [SIGNUP::TOKEN_GENERATED] Verification token generated")
+    const otp = generateOTP()
+    const otpExpiresAt = getOTPExpirationTime()
+    console.log("🟢 [SIGNUP::OTP_GENERATED] OTP generated", {
+      otpLength: otp.length,
+      expiresAt: otpExpiresAt.toISOString(),
+    })
 
     const dbStartTime = Date.now()
     const result = await sql`
@@ -61,15 +65,15 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
         email_id, 
         password, 
         email_verified, 
-        email_verification_token, 
-        email_verification_sent_at
+        email_verification_otp, 
+        otp_expires_at
       )
       VALUES (
         ${sanitizedEmail}, 
         ${hashedPassword}, 
         false, 
-        ${verificationToken}, 
-        NOW()
+        ${otp}, 
+        ${otpExpiresAt.toISOString()}
       )
     `
     const dbDuration = Date.now() - dbStartTime
@@ -79,14 +83,13 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
       dbDuration: `${dbDuration}ms`,
     })
 
-    console.log("🟢 [SIGNUP::SENDING_EMAIL] Sending verification email")
-    const emailResult = await sendVerificationEmail(sanitizedEmail, verificationToken, "signup")
+    console.log("🟢 [SIGNUP::SENDING_EMAIL] Sending verification email with OTP")
+    const emailResult = await sendVerificationEmail(sanitizedEmail, otp, "signup")
 
     if (!emailResult.success) {
       console.error("🔴 [SIGNUP::EMAIL_FAILED] Failed to send verification email", {
         error: emailResult.error,
       })
-      // Don't fail registration if email fails, user can resend later
     } else {
       console.log("🟢 [SIGNUP::EMAIL_SENT] Verification email sent successfully", {
         messageId: emailResult.messageId,
@@ -100,7 +103,7 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
 
     return {
       success: true,
-      message: `Registration successful! Please check your email (${sanitizedEmail}) to verify your account.`,
+      message: `Registration successful! Please check your email (${sanitizedEmail}) for a 6-digit verification code.`,
       email: sanitizedEmail,
     }
   } catch (error) {
