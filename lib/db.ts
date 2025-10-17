@@ -17,8 +17,8 @@ export interface User {
   locked_until?: Date | null
   last_failed_attempt?: Date | null
   email_verified?: boolean // Added email verification fields to User interface
-  email_verification_token?: string | null
-  email_verification_sent_at?: Date | null
+  email_verification_otp?: string | null
+  otp_expires_at?: Date | null
   email_verified_at?: Date | null
 }
 
@@ -44,7 +44,7 @@ export function parseDatabaseError(error: any): DatabaseError {
 export async function authenticateUser(email: string): Promise<User | null> {
   try {
     const result =
-      await sql`SELECT user_id, email_id, password, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_token, email_verification_sent_at, email_verified_at FROM user_registration WHERE email_id = ${email}`
+      await sql`SELECT user_id, email_id, password, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_otp, otp_expires_at, email_verified_at FROM user_registration WHERE email_id = ${email}`
     if (result.length === 0) return null
     return result[0] as User
   } catch (error) {
@@ -185,7 +185,7 @@ export async function healthCheck(): Promise<boolean> {
 export async function getUserByEmailWithRole(email: string) {
   try {
     const result = await sql`
-      SELECT user_id, email_id, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_token, email_verification_sent_at, email_verified_at
+      SELECT user_id, email_id, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_otp, otp_expires_at, email_verified_at
       FROM user_registration
       WHERE email_id = ${email}
     `
@@ -200,8 +200,8 @@ export async function getUserByEmailWithRole(email: string) {
       locked_until: user.locked_until,
       last_failed_attempt: user.last_failed_attempt,
       email_verified: user.email_verified,
-      email_verification_token: user.email_verification_token,
-      email_verification_sent_at: user.email_verification_sent_at,
+      email_verification_otp: user.email_verification_otp,
+      otp_expires_at: user.otp_expires_at,
       email_verified_at: user.email_verified_at,
     }
   } catch (error) {
@@ -212,7 +212,7 @@ export async function getUserByEmailWithRole(email: string) {
 export async function getUserByIdWithRole(userId: string) {
   try {
     const result = await sql`
-      SELECT user_id, email_id, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_token, email_verification_sent_at, email_verified_at
+      SELECT user_id, email_id, user_role, token_version, failed_attempts, locked_until, last_failed_attempt, email_verified, email_verification_otp, otp_expires_at, email_verified_at
       FROM user_registration
       WHERE user_id = ${userId}
     `
@@ -227,8 +227,8 @@ export async function getUserByIdWithRole(userId: string) {
       locked_until: user.locked_until,
       last_failed_attempt: user.last_failed_attempt,
       email_verified: user.email_verified,
-      email_verification_token: user.email_verification_token,
-      email_verification_sent_at: user.email_verification_sent_at,
+      email_verification_otp: user.email_verification_otp,
+      otp_expires_at: user.otp_expires_at,
       email_verified_at: user.email_verified_at,
     }
   } catch (error) {
