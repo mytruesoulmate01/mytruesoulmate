@@ -4,7 +4,6 @@ import {
   resetPassword,
   markTokenAsUsedHybrid,
   DatabaseError,
-  logAuditEvent,
   incrementTokenVersion,
 } from "@/lib/db"
 import { validatePassword } from "@/lib/validation"
@@ -37,15 +36,6 @@ export async function POST(request: NextRequest) {
     const tokenData = await validatePasswordResetToken(token)
 
     if (!tokenData) {
-      // Log failed reset attempt (async, non-critical)
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-
-      logAuditEvent({
-        action: "PASSWORD_RESET_FAILED",
-        details: { reason: "invalid_token", token_prefix: token.substring(0, 8) },
-        ip_address: clientIP,
-      }).catch((error) => console.error("Audit log failed:", error))
-
       return NextResponse.json(
         {
           error: "INVALID_TOKEN",
@@ -70,18 +60,7 @@ export async function POST(request: NextRequest) {
     // Mark token as used (if this fails, token will expire naturally - acceptable risk)
     await markTokenAsUsedHybrid(token)
 
-    // Log successful password reset (async, non-critical)
     const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-    const userAgent = request.headers.get("user-agent") || "unknown"
-
-    logAuditEvent({
-      user_id: tokenData.user_id,
-      action: "PASSWORD_RESET_SUCCESS",
-      details: { email: tokenData.email_id, sessions_invalidated: true },
-      ip_address: clientIP,
-      user_agent: userAgent,
-    }).catch((error) => console.error("Audit log failed:", error))
-
     const emailResult = await sendPasswordResetConfirmationEmail(tokenData.email_id, clientIP)
 
     if (!emailResult.success) {

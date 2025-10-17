@@ -52,51 +52,6 @@ export async function authenticateUser(email: string): Promise<User | null> {
   }
 }
 
-export async function logAuditEvent({
-  user_id,
-  action,
-  details,
-  ip_address,
-  user_agent,
-}: {
-  user_id?: string
-  action: string
-  details?: any
-  ip_address?: string
-  user_agent?: string
-}) {
-  if (!action) {
-    console.warn("⚠️ Skipping audit log: missing 'action' (event_type)")
-    return
-  }
-
-  const metadata = {
-    ...(details || {}),
-    ip_address,
-    user_agent,
-  }
-
-  try {
-    await sql`
-      INSERT INTO audit_log (
-        user_id,
-        event_type,
-        metadata,
-        created_at
-      )
-      VALUES (
-        ${user_id ?? null},
-        ${action},
-        ${JSON.stringify(metadata)},
-        NOW()
-      )
-    `
-  } catch (error) {
-    console.error("❌ Failed to write to audit_log:", error)
-    throw new DatabaseError("Audit log insert failed", "AUDIT_LOG_ERROR")
-  }
-}
-
 export async function upsertHybridDocsRecord(docId: string, content: string, ownerId: string) {
   await sql`INSERT INTO documents (doc_id, content, owner_id) VALUES (${docId}, ${content}, ${ownerId}) ON CONFLICT (doc_id) DO UPDATE SET content = EXCLUDED.content`
 }

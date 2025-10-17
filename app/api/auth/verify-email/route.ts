@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
-import { logAuditEvent } from "@/lib/db"
 import { validateOTP, sanitizeEmail, validateEmail } from "@/lib/validation"
 
 const failedAttempts = new Map<string, { count: number; lockedUntil: number }>()
@@ -138,19 +137,6 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Email verified successfully", { userId: user.user_id })
 
     failedAttempts.delete(attemptKey)
-
-    const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-    const userAgent = request.headers.get("user-agent") || "unknown"
-
-    logAuditEvent({
-      user_id: user.user_id,
-      action: "EMAIL_VERIFIED",
-      details: { email: user.email_id },
-      ip_address: clientIP,
-      user_agent: userAgent,
-    }).catch((error) => {
-      console.error("[v0] Audit log failed (non-blocking):", error)
-    })
 
     const duration = Date.now() - startTime
     console.log(`Email verification completed in ${duration}ms`)

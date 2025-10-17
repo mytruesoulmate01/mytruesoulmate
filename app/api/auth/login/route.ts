@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { authenticateUser, DatabaseError, logAuditEvent, incrementFailedAttempts, resetFailedAttempts } from "@/lib/db"
+import { authenticateUser, DatabaseError, incrementFailedAttempts, resetFailedAttempts } from "@/lib/db"
 import { generateJWT } from "@/lib/jwt"
 import { setAuthCookie } from "@/lib/cookies"
 import { validateEmail, sanitizeEmail } from "@/lib/validation"
@@ -35,32 +35,10 @@ export async function POST(request: NextRequest) {
     const user = await authenticateUser(sanitizedEmail)
 
     if (!user) {
-      // Log failed login attempt (async, non-critical)
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-      const userAgent = request.headers.get("user-agent") || "unknown"
-
-      logAuditEvent({
-        action: "LOGIN_FAILED",
-        details: { email: sanitizedEmail, reason: "user_not_found" },
-        ip_address: clientIP,
-        user_agent: userAgent,
-      }).catch((error) => console.error("Audit log failed:", error))
-
       return NextResponse.json({ error: "INVALID_CREDENTIALS", message: "Invalid email or password" }, { status: 401 })
     }
 
     if (!user.email_verified) {
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-      const userAgent = request.headers.get("user-agent") || "unknown"
-
-      logAuditEvent({
-        user_id: user.user_id,
-        action: "LOGIN_BLOCKED_UNVERIFIED",
-        details: { email: sanitizedEmail, reason: "email_not_verified" },
-        ip_address: clientIP,
-        user_agent: userAgent,
-      }).catch((error) => console.error("Audit log failed:", error))
-
       return NextResponse.json(
         {
           error: "EMAIL_NOT_VERIFIED",
@@ -72,18 +50,6 @@ export async function POST(request: NextRequest) {
 
     if (isAccountCurrentlyLocked(user)) {
       const remainingTime = getRemainingLockoutTime(user)
-
-      // Log lockout attempt
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-      const userAgent = request.headers.get("user-agent") || "unknown"
-
-      logAuditEvent({
-        user_id: user.user_id,
-        action: "LOGIN_BLOCKED_LOCKED",
-        details: { email: sanitizedEmail, remaining_minutes: remainingTime },
-        ip_address: clientIP,
-        user_agent: userAgent,
-      }).catch((error) => console.error("Audit log failed:", error))
 
       return NextResponse.json(
         {
@@ -108,24 +74,6 @@ export async function POST(request: NextRequest) {
         // Account will be locked by checking failed_attempts in isAccountCurrentlyLocked
       }
 
-      // Log failed login attempt (async, non-critical)
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-      const userAgent = request.headers.get("user-agent") || "unknown"
-
-      logAuditEvent({
-        user_id: user.user_id,
-        action: "LOGIN_FAILED",
-        details: {
-          email: sanitizedEmail,
-          reason: "invalid_password",
-          failed_attempts: newFailedAttempts,
-          account_locked: newFailedAttempts >= ACCOUNT_LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS,
-        },
-        ip_address: clientIP,
-        user_agent: userAgent,
-      }).catch((error) => console.error("Audit log failed:", error))
-
-      // Return different message if account was just locked
       if (newFailedAttempts >= ACCOUNT_LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS) {
         return NextResponse.json(
           {
@@ -166,18 +114,6 @@ export async function POST(request: NextRequest) {
 
       // Set authentication cookies
       setAuthCookie(response, accessToken)
-
-      // Log successful login (async, non-critical)
-      const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
-      const userAgent = request.headers.get("user-agent") || "unknown"
-
-      logAuditEvent({
-        user_id: user.user_id,
-        action: "LOGIN_SUCCESS",
-        details: { email: sanitizedEmail },
-        ip_address: clientIP,
-        user_agent: userAgent,
-      }).catch((error) => console.error("Audit log failed:", error))
 
       console.log(`User login completed in ${Date.now() - startTime}ms for ${sanitizedEmail}`)
 
