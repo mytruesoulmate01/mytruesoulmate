@@ -3,6 +3,7 @@ import ProblemSolutionCards from "@/components/why-mytruesoulmate/problem-soluti
 import TrustFoundationSection from "@/components/why-mytruesoulmate/trust-foundation-section"
 import CallToActionSection from "@/components/call-to-action-section"
 
+// Why MyTrueSoulMate - Complete rebrand from VerifyTrust
 export default function WhyMyTrueSoulMatePage() {
   return (
     <div className="min-h-screen">
