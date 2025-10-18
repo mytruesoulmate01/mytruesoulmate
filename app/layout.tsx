@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "VerifyTrust - Trust-Verified Marriage Connections",
+  title: "MyTrueSoulMate - Trust-Verified Marriage Connections",
   description:
     "Get verified credentials and a trust score to share with serious marriage seekers on any platform. Build confidence in your journey to marriage through comprehensive verification.",
   keywords:

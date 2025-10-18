@@ -16,7 +16,7 @@ export default function HeroSection() {
                 Get Started
               </Button>
             </Link>
-            <Link href="/why-verifytrust">
+            <Link href="/why-mytruesoulmate">
               <Button size="lg" variant="secondary" className="bg-white text-red-700 hover:bg-gray-100">
                 Learn More
               </Button>

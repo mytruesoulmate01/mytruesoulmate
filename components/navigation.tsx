@@ -40,7 +40,7 @@ export default function Navigation() {
   // Navigation items
   const navigationItems = [
     { name: "Home", href: "/" },
-    { name: "Why MyTrueSoulMate?", href: "/why-verifytrust" },
+    { name: "Why MyTrueSoulMate?", href: "/why-mytruesoulmate" },
     { name: "How It Works", href: "#how-it-works", isScroll: true },
     { name: "FAQ", href: "/faq" },
   ]

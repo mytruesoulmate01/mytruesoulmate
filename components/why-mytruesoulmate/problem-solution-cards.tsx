@@ -9,7 +9,7 @@ export default function ProblemSolutionCards() {
       problem:
         "The rise of fake profiles and misinformation has made it difficult for genuine individuals to trust online matches.",
       solution: "MyTrueSoulMate restores faith by ensuring that users are who they claim to be.",
-      image: "/images/whyverifytrust-1.png",
+      image: "/images/whymytruesoulmate-1.png",
       alt: "Verification illustration showing protection against fake profiles with a shield",
       reverse: false,
     },
@@ -20,7 +20,7 @@ export default function ProblemSolutionCards() {
         "Marriages are lifelong commitments. Before taking such a big step, families and individuals need a transparent view of a partner's background.",
       solution:
         "MyTrueSoulMate provides comprehensive verification of identity, education, employment, and background.",
-      image: "/images/whyverifytrust-2.png",
+      image: "/images/whymytruesoulmate-2.png",
       alt: "Transparent document showing verified credentials",
       reverse: true,
     },
@@ -30,7 +30,7 @@ export default function ProblemSolutionCards() {
       problem: "Traditional background checks are slow, invasive, and expensive.",
       solution:
         "MyTrueSoulMate offers a faster, affordable, and tamper-proof alternative — tailored specifically for digital matchmaking.",
-      image: "/images/whyverifytrust-3.png",
+      image: "/images/whymytruesoulmate-3.png",
       alt: "Fast verification process illustration",
       reverse: false,
     },
@@ -40,7 +40,7 @@ export default function ProblemSolutionCards() {
       problem: "In a digital-first world, trust is the new currency.",
       solution:
         "MyTrueSoulMate empowers users with a 'Trust Score' backed by verified credentials, making the entire matchmaking experience more secure and credible.",
-      image: "/images/whyverifytrust-4.png",
+      image: "/images/whymytruesoulmate-4.png",
       alt: "Trust score meter showing high credibility",
       reverse: true,
     },
@@ -50,7 +50,7 @@ export default function ProblemSolutionCards() {
       problem: "Not just matches — meaningful connections.",
       solution:
         "Verified information leads to better compatibility, fewer disappointments, and greater peace of mind for both individuals and families.",
-      image: "/images/whyverifytrust-5.png",
+      image: "/images/whymytruesoulmate-5.png",
       alt: "Network of people connecting with verified profiles",
       reverse: false,
     },

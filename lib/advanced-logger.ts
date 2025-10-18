@@ -51,7 +51,7 @@ class AdvancedLogger {
       level: process.env.LOG_LEVEL || "info",
       format: customFormat,
       defaultMeta: {
-        service: "verifytrust-password-reset",
+        service: "mytruesoulmate-password-reset",
         environment: process.env.NODE_ENV || "development",
       },
       transports: [

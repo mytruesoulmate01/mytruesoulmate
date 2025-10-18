@@ -32,8 +32,8 @@ export default function TrustFoundationSection() {
                     <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg border-l-4 border-green-600">
                       <p className="text-lg text-muted-foreground leading-relaxed">
                         <span className="font-semibold text-green-600">Our Promise: </span>
-                        MyTrueSoulMate bridges the gap between convenience and peace of mind, ensuring that every marriage
-                        connection you make is built on authenticity and long-term commitment.
+                        MyTrueSoulMate bridges the gap between convenience and peace of mind, ensuring that every
+                        marriage connection you make is built on authenticity and long-term commitment.
                       </p>
                     </div>
                   </CardContent>
@@ -46,8 +46,8 @@ export default function TrustFoundationSection() {
           <div className="relative">
             <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-2xl p-8 shadow-lg">
               <Image
-                src="/images/whyverifytrust-6.png"
-                alt="Mobile verification interface showing VerifyTrust profile with verification checkmarks"
+                src="/images/whymytruesoulmate-6.png"
+                alt="Mobile verification interface showing MyTrueSoulMate profile with verification checkmarks"
                 width={400}
                 height={300}
                 className="w-full h-auto object-contain"

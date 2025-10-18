@@ -69,7 +69,7 @@ export default function ValuePropositionSection() {
                         className="filter brightness-0 invert"
                       />
                     </div>
-                    <span className="font-semibold text-lg">VerifyTrust</span>
+                    <span className="font-semibold text-lg">MyTrueSoulMate</span>
                   </div>
 
                   <h3 className="text-xl font-semibold mb-2">Trust-verified profiles for serious marriage seekers</h3>
