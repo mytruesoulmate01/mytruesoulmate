@@ -46,7 +46,7 @@ export default function TrustFoundationSection() {
           <div className="relative">
             <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-2xl p-8 shadow-lg">
               <Image
-                src="/images/whymytruesoulmate-6.png"
+                src="/images/whyverifytrust-6.png"
                 alt="Mobile verification interface showing MyTrueSoulMate profile with verification checkmarks"
                 width={400}
                 height={300}
