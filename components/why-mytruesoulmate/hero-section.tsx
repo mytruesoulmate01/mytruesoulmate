@@ -1,4 +1,4 @@
-export default function WhyVerifyTrustHero() {
+export default function WhyMyTrueSoulMateHero() {
   return (
     <section className="relative min-h-[40vh] flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50 dark:from-red-950/20 dark:via-background dark:to-red-950/20">
       <div className="container mx-auto px-4 py-16 text-center">
