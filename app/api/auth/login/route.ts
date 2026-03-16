@@ -1,10 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { authenticateUser, DatabaseError, incrementFailedAttempts, resetFailedAttempts } from "@/lib/db"
-import { generateJWT } from "@/lib/jwt"
-import { setAuthCookie } from "@/lib/cookies"
+import { createClient } from "@/lib/supabase/server"
 import { validateEmail, sanitizeEmail } from "@/lib/validation"
-import { verifyPassword } from "@/lib/password-security"
-import { isAccountCurrentlyLocked, getRemainingLockoutTime, ACCOUNT_LOCKOUT_CONFIG } from "@/lib/account-lockout-config"
 
 export interface LoginRequest {
   email: string
@@ -12,8 +8,6 @@ export interface LoginRequest {
 }
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now()
-
   try {
     const body: LoginRequest = await request.json()
     const { email, password } = body
@@ -31,123 +25,66 @@ export async function POST(request: NextRequest) {
     // Sanitize email
     const sanitizedEmail = sanitizeEmail(email)
 
-    // Get user using hybrid approach
-    const user = await authenticateUser(sanitizedEmail)
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: sanitizedEmail,
+      password,
+    })
 
-    if (!user) {
-      return NextResponse.json({ error: "INVALID_CREDENTIALS", message: "Invalid email or password" }, { status: 401 })
-    }
-
-    if (!user.email_verified) {
-      return NextResponse.json(
-        {
-          error: "EMAIL_NOT_VERIFIED",
-          message: "Please verify your email address before logging in. Check your inbox for the verification link.",
-        },
-        { status: 403 },
-      )
-    }
-
-    if (isAccountCurrentlyLocked(user)) {
-      const remainingTime = getRemainingLockoutTime(user)
-
-      return NextResponse.json(
-        {
-          error: "ACCOUNT_LOCKED",
-          message: `Account is locked. Try again in ${remainingTime} minutes.`,
-          remainingMinutes: remainingTime,
-        },
-        { status: 423 },
-      )
-    }
-
-    // Verify password
-    const isPasswordValid = await verifyPassword(password, user.password)
-
-    if (!isPasswordValid) {
-      await incrementFailedAttempts(sanitizedEmail)
-
-      const newFailedAttempts = (user.failed_attempts || 0) + 1
-
-      // Lock account if threshold reached
-      if (newFailedAttempts >= ACCOUNT_LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS) {
-        // Account will be locked by checking failed_attempts in isAccountCurrentlyLocked
+    if (error) {
+      console.error("[Login] Supabase auth error:", error.message)
+      
+      if (error.message.includes("Invalid login credentials")) {
+        return NextResponse.json(
+          { error: "INVALID_CREDENTIALS", message: "Invalid email or password" },
+          { status: 401 }
+        )
       }
-
-      if (newFailedAttempts >= ACCOUNT_LOCKOUT_CONFIG.MAX_FAILED_ATTEMPTS) {
+      
+      if (error.message.includes("Email not confirmed")) {
         return NextResponse.json(
           {
-            error: "ACCOUNT_LOCKED",
-            message: `Too many failed attempts. Account locked for ${ACCOUNT_LOCKOUT_CONFIG.LOCKOUT_DURATION_MINUTES} minutes.`,
-            remainingMinutes: ACCOUNT_LOCKOUT_CONFIG.LOCKOUT_DURATION_MINUTES,
+            error: "EMAIL_NOT_VERIFIED",
+            message: "Please verify your email address before logging in. Check your inbox for the verification link.",
           },
-          { status: 423 },
+          { status: 403 }
         )
       }
 
-      return NextResponse.json({ error: "INVALID_CREDENTIALS", message: "Invalid email or password" }, { status: 401 })
-    }
-
-    if (user.failed_attempts && user.failed_attempts > 0) {
-      await resetFailedAttempts(sanitizedEmail)
-    }
-
-    // Generate JWT tokens
-    try {
-      const accessToken = await generateJWT({
-        sub: user.user_id.toString(),
-        email: user.email_id,
-        tokenVersion: user.token_version || 1, // Include token version from database
-      })
-
-      // Create response
-      const response = NextResponse.json({
-        success: true,
-        message: "Login successful",
-        user: {
-          id: user.user_id,
-          email: user.email_id,
-          role: user.user_role,
-          verified: user.email_verified, // Use actual email_verified status
-        },
-      })
-
-      // Set authentication cookies
-      setAuthCookie(response, accessToken)
-
-      console.log(`User login completed in ${Date.now() - startTime}ms for ${sanitizedEmail}`)
-
-      return response
-    } catch (jwtError) {
-      console.error("[SECURITY] JWT generation failed during login:", jwtError)
       return NextResponse.json(
-        {
-          error: "LOGIN_FAILED",
-          message: "Authentication system error. Please try again.",
-        },
-        { status: 500 },
+        { error: "LOGIN_FAILED", message: error.message },
+        { status: 401 }
       )
     }
+
+    if (!data.user) {
+      return NextResponse.json(
+        { error: "LOGIN_FAILED", message: "Login failed. Please try again." },
+        { status: 401 }
+      )
+    }
+
+    console.log("[Login] User authenticated successfully:", data.user.email)
+
+    return NextResponse.json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        role: data.user.user_metadata?.role || "user",
+        emailConfirmed: !!data.user.email_confirmed_at,
+      },
+    })
   } catch (error) {
-    console.error("Login error:", error)
-
-    // Handle hybrid database errors
-    if (error instanceof DatabaseError) {
-      return NextResponse.json(
-        {
-          error: error.code,
-          message: error.message,
-        },
-        { status: 500 },
-      )
-    }
-
+    console.error("[Login] Error:", error)
     return NextResponse.json(
       {
         error: "LOGIN_FAILED",
         message: "Login failed. Please try again.",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }

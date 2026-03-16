@@ -13,7 +13,7 @@ import Image from "next/image"
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const { theme, setTheme } = useTheme()
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const howItWorksRef = useRef(false)
@@ -71,7 +71,7 @@ export default function Navigation() {
   }
 
   const handleLogout = async () => {
-    await logout()
+    await signOut()
     router.push("/")
   }
 

@@ -8,7 +8,7 @@ import Image from "next/image"
 import ProtectedRoute from "@/components/protected-route"
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
 
   if (!user) {
     return null // ProtectedRoute will handle redirect
@@ -23,7 +23,7 @@ export default function ProfilePage() {
               <h1 className="text-3xl font-bold">Your Profile</h1>
               <Button
                 variant="outline"
-                onClick={logout}
+                onClick={signOut}
                 className="border-red-600 text-red-600 hover:bg-red-50 bg-transparent"
               >
                 Logout
