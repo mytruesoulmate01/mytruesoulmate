@@ -1,27 +1,84 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next()
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
-  response.headers.set("X-Frame-Options", "DENY")
-  response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-  response.headers.set("X-XSS-Protection", "1; mode=block")
-  response.headers.set("X-DNS-Prefetch-Control", "off")
-  response.headers.set("X-Download-Options", "noopen")
-  response.headers.set("X-Permitted-Cross-Domain-Policies", "none")
-  response.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
-  response.headers.set("Cross-Origin-Opener-Policy", "same-origin")
-  response.headers.set("Cross-Origin-Resource-Policy", "same-origin")
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          )
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options),
+          )
+        },
+      },
+    },
+  )
 
+  // IMPORTANT: Do not run code between createServerClient and supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Protected routes - redirect to login if not authenticated
+  const protectedPaths = ['/dashboard']
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  if (isProtectedPath && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('redirect', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Auth pages - redirect to dashboard if already authenticated
+  const authPaths = ['/login', '/signup']
+  const isAuthPath = authPaths.some(path => 
+    request.nextUrl.pathname === path
+  )
+
+  if (isAuthPath && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  // Security headers
+  supabaseResponse.headers.set("X-Frame-Options", "DENY")
+  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
+  supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block")
+  supabaseResponse.headers.set("X-DNS-Prefetch-Control", "off")
+  supabaseResponse.headers.set("X-Download-Options", "noopen")
+  supabaseResponse.headers.set("X-Permitted-Cross-Domain-Policies", "none")
+  supabaseResponse.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
+  supabaseResponse.headers.set("Cross-Origin-Opener-Policy", "same-origin")
+  supabaseResponse.headers.set("Cross-Origin-Resource-Policy", "same-origin")
+
+  // Content Security Policy
   const csp = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com",
+    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.supabase.co",
     "media-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
@@ -29,12 +86,14 @@ export function middleware(request: NextRequest) {
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
   ].join("; ")
-  response.headers.set("Content-Security-Policy", csp)
+  supabaseResponse.headers.set("Content-Security-Policy", csp)
 
+  // HSTS for production
   if (process.env.NODE_ENV === "production") {
-    response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+    supabaseResponse.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
   }
 
+  // Permissions Policy
   const permissionsPolicy = [
     "camera=()",
     "microphone=()",
@@ -47,38 +106,20 @@ export function middleware(request: NextRequest) {
     "gyroscope=()",
     "magnetometer=()",
   ].join(", ")
-  response.headers.set("Permissions-Policy", permissionsPolicy)
+  supabaseResponse.headers.set("Permissions-Policy", permissionsPolicy)
 
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(request.method)
-
-    if (!isSafeMethod) {
-      const origin = request.headers.get("origin")
-      const referer = request.headers.get("referer")
-      const host = request.headers.get("host")
-
-      const allowedOrigins = [
-        `https://${host}`,
-        `http://${host}`, // For development
-        process.env.NEXT_PUBLIC_APP_URL,
-        process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : null,
-      ].filter(Boolean)
-
-      if (!origin || !allowedOrigins.includes(origin)) {
-        console.log("[v0] Origin validation failed:", { origin, allowedOrigins })
-        return NextResponse.json({ error: "Invalid origin" }, { status: 403 })
-      }
-
-      if (!referer || !allowedOrigins.some((allowed) => referer.startsWith(allowed))) {
-        console.log("[v0] Referer validation failed:", { referer, allowedOrigins })
-        return NextResponse.json({ error: "Invalid referer" }, { status: 403 })
-      }
-    }
-  }
-
-  return response
+  return supabaseResponse
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

@@ -8,12 +8,12 @@ import Link from "next/link"
 import Image from "next/image"
 
 export default function DashboardHeader() {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await signOut()
       router.push("/")
     } catch (error) {
       console.error("Logout failed:", error)
