@@ -1,82 +1,208 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { withAuth } from "@/lib/auth-middleware"
-import { sql } from "@/lib/db"
-import type { JWTPayload } from "@/lib/jwt"
+import { createClient } from "@/lib/supabase/server"
+import { withSupabaseAuth, type SupabaseUser } from "@/lib/supabase/auth-middleware"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 export const fetchCache = "force-no-store"
 
 // ===========================
-// GET: Data Shared With User
+// GET: Trust Connections Data
 // ===========================
-
-export const GET = withAuth(async (_req: NextRequest, user: JWTPayload) => {
+export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser) => {
   try {
-    // ✅ Log the logged-in user info
-    console.log("🔐 Logged-in User ID (user.sub):", user.sub)
-    console.log("📧 Logged-in User Email (user.email):", user.email)
+    const supabase = await createClient()
 
-    console.log("🔍 Executing query: SELECT * FROM user_share_details WHERE recipient_email =", user.email)
+    console.log("[Trust Connections] Fetching for user:", user.id)
 
-    const sharedData = await sql`
-      SELECT * FROM user_share_details
-      WHERE recipient_email = ${user.email}
-    `
+    // Get connections where this user is the recipient
+    const { data: sharedWithMe, error: sharedError } = await supabase
+      .from("trust_connections")
+      .select(`
+        *,
+        sender:user_details!trust_connections_sender_user_id_fkey(
+          full_name,
+          email,
+          profile_image_url
+        )
+      `)
+      .eq("recipient_user_id", user.id)
+      .eq("status", "accepted")
 
-    console.log("📊 Raw query result count:", sharedData.length)
-    console.log("📋 Raw query result:", JSON.stringify(sharedData, null, 2))
-
-    const allRecords = await sql`SELECT COUNT(*) as total FROM user_share_details`
-    console.log("📈 Total records in user_share_details table:", allRecords[0]?.total)
-
-    const similarEmails = await sql`
-      SELECT recipient_email, user_email FROM user_share_details 
-      WHERE recipient_email LIKE '%aryan%' OR user_email LIKE '%aryan%'
-    `
-    console.log("🔎 Records with 'aryan' in email:", similarEmails)
-
-    const filteredData = sharedData.map(({ details_shared, ...rest }) => rest)
-
-    if (filteredData.length === 0) {
-      console.log("❌ No records found shared with this user.")
-      return NextResponse.json({ success: false, message: "No data shared with you" }, { status: 404 })
+    if (sharedError) {
+      console.error("[Trust Connections] Error fetching shared with me:", sharedError)
     }
 
-    console.log("✅ Records shared with logged-in user:", filteredData)
+    // Get connections where this user is the sender
+    const { data: sharedByMe, error: byMeError } = await supabase
+      .from("trust_connections")
+      .select(`
+        *,
+        recipient:user_details!trust_connections_recipient_user_id_fkey(
+          full_name,
+          email,
+          profile_image_url
+        )
+      `)
+      .eq("sender_user_id", user.id)
+
+    if (byMeError) {
+      console.error("[Trust Connections] Error fetching shared by me:", byMeError)
+    }
+
+    // Get pending connection requests for this user
+    const { data: pendingRequests, error: pendingError } = await supabase
+      .from("trust_connections")
+      .select(`
+        *,
+        sender:user_details!trust_connections_sender_user_id_fkey(
+          full_name,
+          email,
+          profile_image_url
+        )
+      `)
+      .eq("recipient_user_id", user.id)
+      .eq("status", "pending")
+
+    if (pendingError) {
+      console.error("[Trust Connections] Error fetching pending requests:", pendingError)
+    }
 
     return NextResponse.json({
       success: true,
-      sharedWithMe: filteredData,
+      sharedWithMe: sharedWithMe || [],
+      sharedByMe: sharedByMe || [],
+      pendingRequests: pendingRequests || [],
     })
   } catch (err: any) {
-    console.error("❌ Error in GET /api/shared-with-me:", err)
+    console.error("[Trust Connections] Error:", err)
     return NextResponse.json({ success: false, message: "Server error", error: err.message }, { status: 500 })
   }
 })
 
 // ===========================
-// POST: Update Timestamp Only
+// POST: Create/Update Connection
 // ===========================
-export const POST = withAuth(async (req: NextRequest, user: JWTPayload) => {
+export const POST = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
   try {
-    console.log("🕒 Updating details_shared for user:", user.sub)
+    const body = await req.json()
+    const { recipientEmail, action } = body
+    const supabase = await createClient()
 
-    const result = await sql`
-      UPDATE user_share_details
-      SET details_shared = CURRENT_TIMESTAMP
-      WHERE user_id = ${user.sub}
-    `
+    if (!recipientEmail) {
+      return NextResponse.json({ success: false, message: "Recipient email required" }, { status: 400 })
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: "details_shared timestamp updated successfully",
-    })
+    // Find recipient user
+    const { data: recipient, error: recipientError } = await supabase
+      .from("user_details")
+      .select("user_id, email")
+      .eq("email", recipientEmail)
+      .single()
+
+    if (recipientError || !recipient) {
+      return NextResponse.json(
+        { success: false, message: "Recipient not found" },
+        { status: 404 }
+      )
+    }
+
+    if (recipient.user_id === user.id) {
+      return NextResponse.json(
+        { success: false, message: "Cannot connect with yourself" },
+        { status: 400 }
+      )
+    }
+
+    // Check for existing connection
+    const { data: existing } = await supabase
+      .from("trust_connections")
+      .select("id, status")
+      .or(`and(sender_user_id.eq.${user.id},recipient_user_id.eq.${recipient.user_id}),and(sender_user_id.eq.${recipient.user_id},recipient_user_id.eq.${user.id})`)
+      .single()
+
+    if (existing && existing.status === "accepted") {
+      return NextResponse.json(
+        { success: false, message: "Connection already exists" },
+        { status: 400 }
+      )
+    }
+
+    if (action === "request") {
+      // Create new connection request
+      const { error: insertError } = await supabase
+        .from("trust_connections")
+        .insert({
+          sender_user_id: user.id,
+          recipient_user_id: recipient.user_id,
+          status: "pending",
+        })
+
+      if (insertError) throw insertError
+
+      return NextResponse.json({ success: true, message: "Connection request sent" })
+    }
+
+    if (action === "accept" && existing) {
+      const { error: updateError } = await supabase
+        .from("trust_connections")
+        .update({ status: "accepted", responded_at: new Date().toISOString() })
+        .eq("id", existing.id)
+
+      if (updateError) throw updateError
+
+      return NextResponse.json({ success: true, message: "Connection accepted" })
+    }
+
+    if (action === "decline" && existing) {
+      const { error: updateError } = await supabase
+        .from("trust_connections")
+        .update({ status: "declined", responded_at: new Date().toISOString() })
+        .eq("id", existing.id)
+
+      if (updateError) throw updateError
+
+      return NextResponse.json({ success: true, message: "Connection declined" })
+    }
+
+    return NextResponse.json({ success: false, message: "Invalid action" }, { status: 400 })
   } catch (err: any) {
-    console.error("❌ Error in POST /api/trust-connections:", err)
+    console.error("[Trust Connections] POST Error:", err)
     return NextResponse.json(
-      { success: false, message: "Failed to update timestamp", error: err.message },
-      { status: 500 },
+      { success: false, message: "Failed to process request", error: err.message },
+      { status: 500 }
+    )
+  }
+})
+
+// ===========================
+// DELETE: Remove Connection
+// ===========================
+export const DELETE = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
+  try {
+    const body = await req.json()
+    const { connectionId } = body
+    const supabase = await createClient()
+
+    if (!connectionId) {
+      return NextResponse.json({ success: false, message: "Connection ID required" }, { status: 400 })
+    }
+
+    // Delete connection (only if user is part of it)
+    const { error } = await supabase
+      .from("trust_connections")
+      .delete()
+      .eq("id", connectionId)
+      .or(`sender_user_id.eq.${user.id},recipient_user_id.eq.${user.id}`)
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true, message: "Connection removed" })
+  } catch (err: any) {
+    console.error("[Trust Connections] DELETE Error:", err)
+    return NextResponse.json(
+      { success: false, message: "Failed to remove connection", error: err.message },
+      { status: 500 }
     )
   }
 })

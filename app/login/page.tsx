@@ -1,33 +1,30 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, AlertCircle, Clock, CheckCircle2 } from "lucide-react"
+import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react"
 import Image from "next/image"
+import { signIn } from "@/app/auth/actions"
 
-export default function LoginPage() {
+function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [lockoutInfo, setLockoutInfo] = useState<{ remainingMinutes?: number } | null>(null)
-  const [isEmailNotVerified, setIsEmailNotVerified] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
 
-  const registered = searchParams.get("registered") === "true"
   const verified = searchParams.get("verified") === "true"
+  const redirectTo = searchParams.get("redirect") || "/dashboard"
+  const urlError = searchParams.get("error")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -35,11 +32,8 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }))
-    // Clear error when user starts typing
     if (error) {
       setError(null)
-      setLockoutInfo(null)
-      setIsEmailNotVerified(false)
     }
   }
 
@@ -47,21 +41,18 @@ export default function LoginPage() {
     e.preventDefault()
     setIsSubmitting(true)
     setError(null)
-    setLockoutInfo(null)
-    setIsEmailNotVerified(false)
 
     try {
-      const result = await login(formData.email, formData.password)
+      const formDataObj = new FormData()
+      formDataObj.append("email", formData.email)
+      formDataObj.append("password", formData.password)
+
+      const result = await signIn(formDataObj)
 
       if (result.success) {
-        router.push("/dashboard/profile")
+        router.push(redirectTo)
+        router.refresh()
       } else {
-        if (result.remainingMinutes !== undefined) {
-          setLockoutInfo({ remainingMinutes: result.remainingMinutes })
-        }
-        if (result.error?.includes("verify your email") || result.error?.includes("EMAIL_NOT_VERIFIED")) {
-          setIsEmailNotVerified(true)
-        }
         setError(result.error || "Invalid email or password")
       }
     } catch (error) {
@@ -105,36 +96,15 @@ export default function LoginPage() {
           </div>
         )}
 
-        {error && (
-          <div
-            className={`p-4 rounded-md text-sm ${
-              lockoutInfo
-                ? "bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 border border-orange-200 dark:border-orange-800"
-                : "bg-red-50 dark:bg-red-900/20 text-red-600"
-            }`}
-          >
+        {(error || urlError) && (
+          <div className="p-4 rounded-md text-sm bg-red-50 dark:bg-red-900/20 text-red-600 border border-red-200 dark:border-red-800">
             <div className="flex items-start">
-              {lockoutInfo ? (
-                <Clock className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-              ) : (
-                <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-              )}
+              <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium">{error}</p>
-                {lockoutInfo && lockoutInfo.remainingMinutes && (
-                  <div className="mt-2 text-xs">
-                    <p>For security reasons, your account has been temporarily locked.</p>
-                    <p className="mt-1">
-                      <strong>Time remaining: {lockoutInfo.remainingMinutes} minutes</strong>
-                    </p>
-                    <p className="mt-2">If you believe this is an error, please contact support or try again later.</p>
-                  </div>
-                )}
-                {isEmailNotVerified && (
+                <p className="font-medium">{error || urlError}</p>
+                {error?.includes("verify your email") && (
                   <div className="mt-2">
-                    <Link href="/resend-verification" className="text-xs underline hover:no-underline">
-                      Resend verification email
-                    </Link>
+                    <p className="text-xs">Check your email inbox for the confirmation link.</p>
                   </div>
                 )}
               </div>
@@ -193,7 +163,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             className="w-full bg-red-600 hover:bg-red-700"
-            disabled={isSubmitting || (lockoutInfo && lockoutInfo.remainingMinutes && lockoutInfo.remainingMinutes > 0)}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Logging in..." : "Log in"}
           </Button>
@@ -209,5 +179,21 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50">
+          <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+          </div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   )
 }

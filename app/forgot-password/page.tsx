@@ -2,34 +2,19 @@
 
 import type React from "react"
 import { useState, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { FormMessage } from "@/components/ui/form-message"
 import Link from "next/link"
 import { ArrowLeft, Mail, Shield, CheckCircle } from "lucide-react"
-import { ForgotPasswordDebugHelper } from "@/components/forgot-password-debug-helper" // Declare the variable before using it
+import { resetPassword } from "@/app/auth/actions"
 
 function ForgotPasswordForm() {
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [showDebug, setShowDebug] = useState(false) // Enable debug by default
-
-  // Get URL parameters
-  const urlMessage = searchParams.get("message")
-  const urlError = searchParams.get("error")
-
-  console.log("🔵 [ForgotPasswordPage] Component rendered", {
-    urlMessage,
-    urlError,
-    timestamp: new Date().toISOString(),
-  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,47 +23,29 @@ function ForgotPasswordForm() {
     setMessage("")
 
     try {
-      console.log("🔵 [ForgotPasswordPage] Submitting forgot password request", {
-        email: email.split("@")[1], // Only log domain for privacy
-        timestamp: new Date().toISOString(),
-      })
+      const formData = new FormData()
+      formData.append("email", email)
 
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      })
+      const result = await resetPassword(formData)
 
-      const data = await response.json()
-      console.log("🔵 [ForgotPasswordPage] Forgot password response:", data)
-
-      if (data.success) {
-        setMessage(data.message)
+      if (result.success) {
+        setMessage(result.message || "Check your email for a password reset link.")
         setIsSubmitted(true)
-        console.log("✅ [ForgotPasswordPage] Forgot password request successful")
       } else {
-        console.log("❌ [ForgotPasswordPage] Forgot password request failed:", data.error)
-        setError(data.error || "An error occurred. Please try again.")
+        setError(result.error || "An error occurred. Please try again.")
       }
     } catch (error) {
-      console.error("❌ [ForgotPasswordPage] Forgot password error:", error)
+      console.error("Forgot password error:", error)
       setError("Network error. Please check your connection and try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Toggle debug panel
-  const toggleDebug = () => {
-    setShowDebug(!showDebug)
-  }
-
   // Success state
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -90,13 +57,15 @@ function ForgotPasswordForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <FormMessage type="success" message={message} />
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800 text-sm">{message}</p>
+            </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-semibold text-blue-900 mb-2">What's next?</h3>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Check your email inbox (and spam folder)</li>
-                <li>• Click the reset link within 30 minutes</li>
+                <li>• Click the reset link in the email</li>
                 <li>• Create a new strong password</li>
                 <li>• Log in with your new password</li>
               </ul>
@@ -121,11 +90,6 @@ function ForgotPasswordForm() {
                 </Button>
               </Link>
             </div>
-
-            {showDebug && <ForgotPasswordDebugHelper />}
-            <button onClick={toggleDebug} className="mt-4 text-xs text-gray-500 hover:text-gray-700 block mx-auto">
-              {showDebug ? "Hide Debug Info" : "Show Debug Info"}
-            </button>
           </CardContent>
         </Card>
       </div>
@@ -134,11 +98,11 @@ function ForgotPasswordForm() {
 
   // Main forgot password form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            <Mail className="w-6 h-6 text-blue-600" />
+          <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <Mail className="w-6 h-6 text-red-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Forgot Password?</CardTitle>
           <CardDescription className="text-gray-600">
@@ -163,13 +127,20 @@ function ForgotPasswordForm() {
               />
             </div>
 
-            {(error || urlError) && <FormMessage type="error" message={error || urlError || ""} />}
-            {(message || urlMessage) && <FormMessage type="success" message={message || urlMessage || ""} />}
+            {error && (
+              <div className="p-3 rounded-md text-sm bg-red-50 text-red-600 border border-red-200">
+                {error}
+              </div>
+            )}
 
-            <Button type="submit" disabled={isLoading || !email} className="w-full">
+            <Button 
+              type="submit" 
+              disabled={isLoading || !email} 
+              className="w-full bg-red-600 hover:bg-red-700"
+            >
               {isLoading ? (
                 <>
-                  <LoadingSpinner className="w-4 h-4 mr-2" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                   Sending Reset Link...
                 </>
               ) : (
@@ -188,7 +159,7 @@ function ForgotPasswordForm() {
                 <div>
                   <h3 className="font-semibold text-amber-900 text-sm">Important Info</h3>
                   <p className="text-amber-800 text-xs mt-1">
-                    Reset links expire after 30 minutes for your security. If you don't receive an email, check your
+                    Reset links expire after a short time for your security. If you don't receive an email, check your
                     spam folder or try again.
                   </p>
                 </div>
@@ -197,16 +168,11 @@ function ForgotPasswordForm() {
           </div>
 
           <div className="mt-6 text-center">
-            <Link href="/login" className="text-sm text-blue-600 hover:text-blue-500">
+            <Link href="/login" className="text-sm text-red-600 hover:text-red-500">
               <ArrowLeft className="w-4 h-4 inline mr-1" />
               Back to Login
             </Link>
           </div>
-
-          {showDebug && <ForgotPasswordDebugHelper />}
-          <button onClick={toggleDebug} className="mt-4 text-xs text-gray-500 hover:text-gray-700 block mx-auto">
-            {showDebug ? "Hide Debug Info" : "Show Debug Info"}
-          </button>
         </CardContent>
       </Card>
     </div>
@@ -217,10 +183,10 @@ export default function ForgotPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50 p-4">
           <Card className="w-full max-w-md">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <LoadingSpinner className="w-8 h-8 mb-4" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mb-4" />
               <p className="text-gray-600">Loading...</p>
             </CardContent>
           </Card>

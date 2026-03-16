@@ -1,61 +1,27 @@
-import { type NextRequest, NextResponse } from "next/server"
-// import { validateCSRFToken, clearCSRFCookie } from "@/lib/csrf"
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-export async function POST(request: NextRequest) {
-  const startTime = Date.now()
-
+export async function POST() {
   try {
-    console.log("🔵 [LOGOUT_START] Logout process initiated", {
-      timestamp: new Date().toISOString(),
-      userAgent: request.headers.get("user-agent"),
-      ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown",
-    })
+    console.log("[LOGOUT] Logout process initiated")
+    
+    const supabase = await createClient()
+    
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      console.error("[LOGOUT] Error during sign out:", error)
+      return NextResponse.json({ error: "Sign out failed" }, { status: 500 })
+    }
 
-    const response = NextResponse.json({
+    console.log("[LOGOUT] User logged out successfully")
+
+    return NextResponse.json({
       success: true,
       message: "Logged out successfully",
     })
-
-    console.log("🔵 [LOGOUT_COOKIE_CLEARING] Clearing authentication cookies")
-
-    // Clear auth cookies
-    response.cookies.set("auth_token", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 0,
-      path: "/",
-    })
-
-    response.cookies.set("refresh_token", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 0,
-      path: "/",
-    })
-
-    console.log("🟢 [LOGOUT_COOKIES_CLEARED] Auth cookies cleared successfully", {
-      authTokenCleared: true,
-      refreshTokenCleared: true,
-    })
-
-    const duration = Date.now() - startTime
-    console.log("🟢 [LOGOUT_COMPLETE] User logged out successfully", {
-      totalDuration: duration,
-      timestamp: new Date().toISOString(),
-    })
-
-    return response
   } catch (error) {
-    const duration = Date.now() - startTime
-    console.error("🔴 [LOGOUT_ERROR] Error during logout process", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      duration,
-      timestamp: new Date().toISOString(),
-    })
-
+    console.error("[LOGOUT] Error during logout process:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

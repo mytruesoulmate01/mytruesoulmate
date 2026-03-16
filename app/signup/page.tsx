@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -10,15 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff } from "lucide-react"
-import { signupAction } from "./actions"
-
-type SignupResult = {
-  success?: boolean
-  message?: string
-  email?: string
-  error?: string
-}
+import { Eye, EyeOff, CheckCircle } from "lucide-react"
+import { signUp } from "@/app/auth/actions"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -31,6 +23,8 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
 
   const passwordValidation = {
     minLength: formData.password.length >= 8,
@@ -87,18 +81,60 @@ export default function SignupPage() {
       formDataObj.append("password", formData.password)
       formDataObj.append("confirmPassword", formData.confirmPassword)
 
-      const result: SignupResult = await signupAction(formDataObj)
+      const result = await signUp(formDataObj)
 
       if (result?.error) {
         setErrors({ submit: result.error })
       } else if (result?.success) {
-        router.push(`/verify-email?email=${encodeURIComponent(result.email || formData.email)}`)
+        setIsSuccess(true)
+        setSuccessMessage(result.message || "Please check your email for a confirmation link.")
       }
     } catch (error) {
       setErrors({ submit: "An unexpected error occurred. Please try again." })
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Success state
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl">Check Your Email</CardTitle>
+            <CardDescription>
+              We've sent a confirmation link to your email address
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-800 text-sm">{successMessage}</p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">What's next?</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Check your email inbox (and spam folder)</li>
+                <li>• Click the confirmation link in the email</li>
+                <li>• You'll be redirected to complete your profile</li>
+              </ul>
+            </div>
+
+            <div className="text-center">
+              <Link href="/login">
+                <Button variant="outline">
+                  Already confirmed? Sign in
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -121,8 +157,9 @@ export default function SignupPage() {
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className={errors.email ? "border-red-500" : ""}
+                disabled={isSubmitting}
               />
-              {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+              {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
             </div>
 
             <div>
@@ -135,6 +172,7 @@ export default function SignupPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange("password", e.target.value)}
                   className={errors.password ? "border-red-500" : ""}
+                  disabled={isSubmitting}
                 />
                 <Button
                   type="button"
@@ -146,7 +184,23 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+              {formData.password && (
+                <div className="mt-2 space-y-1">
+                  <p className={`text-xs ${passwordValidation.minLength ? 'text-green-600' : 'text-gray-500'}`}>
+                    {passwordValidation.minLength ? '✓' : '○'} At least 8 characters
+                  </p>
+                  <p className={`text-xs ${passwordValidation.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                    {passwordValidation.hasUppercase ? '✓' : '○'} One uppercase letter
+                  </p>
+                  <p className={`text-xs ${passwordValidation.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                    {passwordValidation.hasLowercase ? '✓' : '○'} One lowercase letter
+                  </p>
+                  <p className={`text-xs ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                    {passwordValidation.hasNumber ? '✓' : '○'} One number
+                  </p>
+                </div>
+              )}
+              {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
             </div>
 
             <div>
@@ -159,6 +213,7 @@ export default function SignupPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                   className={errors.confirmPassword ? "border-red-500" : ""}
+                  disabled={isSubmitting}
                 />
                 <Button
                   type="button"
@@ -170,7 +225,7 @@ export default function SignupPage() {
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
             </div>
 
             {errors.submit && (
@@ -179,7 +234,11 @@ export default function SignupPage() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              className="w-full bg-red-600 hover:bg-red-700" 
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
