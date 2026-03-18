@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { withSupabaseAuth, type SupabaseUser } from "@/lib/supabase/auth-middleware"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -9,9 +8,14 @@ export const fetchCache = "force-no-store"
 // ======================
 // GET: Fetch Preferences
 // ======================
-export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser) => {
+export async function GET() {
   try {
     const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     // Get user's share details
     const { data: sharingData, error } = await supabase
@@ -70,15 +74,21 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
     console.error("[GET user_share_details] Error:", err)
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 })
   }
-})
+}
 
 // ==========================
 // POST: Save/Update Sharing
 // ==========================
-export const POST = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
     const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await req.json()
 
     // Validate input
     if (typeof body !== "object" || body === null) {
@@ -131,18 +141,24 @@ export const POST = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser
     }
 
     return NextResponse.json({ success: true, message: "Preferences updated" })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
     console.error("Error in POST /save-preferences:", err)
-    return NextResponse.json({ success: false, message: "Server error", error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Server error", error: message }, { status: 500 })
   }
-})
+}
 
 // ===========================
 // DELETE: Remove Shared Entry
 // ===========================
-export const DELETE = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
+export async function DELETE() {
   try {
     const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     const { error } = await supabase
       .from("user_share_details")
@@ -152,8 +168,9 @@ export const DELETE = withSupabaseAuth(async (req: NextRequest, user: SupabaseUs
     if (error) throw error
 
     return NextResponse.json({ success: true, message: "Sharing preferences deleted" })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
     console.error("Error in DELETE /save-preferences:", err)
-    return NextResponse.json({ success: false, message: "Server error", error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Server error", error: message }, { status: 500 })
   }
-})
+}
