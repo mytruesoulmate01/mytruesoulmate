@@ -6,16 +6,10 @@ import { revalidatePath } from "next/cache"
 
 /**
  * Get the base URL for redirects
- * Priority: NEXT_PUBLIC_APP_URL > NEXT_PUBLIC_VERCEL_URL > localhost
+ * Uses the official production URL
  */
 function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL
-  }
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  }
-  return 'http://localhost:3000'
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://www.mytruesoulmate.com'
 }
 
 export type AuthResult = {
