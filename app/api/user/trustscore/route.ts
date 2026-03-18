@@ -1,16 +1,20 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { withSupabaseAuth, type SupabaseUser } from "@/lib/supabase/auth-middleware"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 export const fetchCache = "force-no-store"
 
-export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser) => {
-  console.log(`[API][Trustscore] Request received for user_id: ${user.id}`)
-
+export async function GET() {
   try {
     const supabase = await createClient()
+    
+    // Get authenticated user directly from Supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     // Fetch user details from the user_details table
     const { data: userDetails, error: detailsError } = await supabase
@@ -20,8 +24,7 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
       .single()
 
     if (detailsError && detailsError.code !== "PGRST116") {
-      // PGRST116 = no rows returned
-      console.error(`[API][Trustscore] Error fetching user details:`, detailsError)
+      console.error("[API][Trustscore] Error fetching user details:", detailsError)
       throw detailsError
     }
 
@@ -33,7 +36,7 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
       .single()
 
     if (trustscoreError && trustscoreError.code !== "PGRST116") {
-      console.error(`[API][Trustscore] Error fetching trustscore:`, trustscoreError)
+      console.error("[API][Trustscore] Error fetching trustscore:", trustscoreError)
       throw trustscoreError
     }
 
@@ -51,8 +54,6 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
       background_verified: false,
     }
 
-    console.log(`[API][Trustscore] Data fetched successfully for user: ${user.id}`)
-
     return NextResponse.json(
       {
         success: true,
@@ -65,10 +66,10 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
       { status: 200 }
     )
   } catch (error) {
-    console.error(`[API][Trustscore] Error:`, error)
+    console.error("[API][Trustscore] Error:", error)
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }
     )
   }
-})
+}

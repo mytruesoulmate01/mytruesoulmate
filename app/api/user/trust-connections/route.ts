@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { withSupabaseAuth, type SupabaseUser } from "@/lib/supabase/auth-middleware"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -9,11 +8,14 @@ export const fetchCache = "force-no-store"
 // ===========================
 // GET: Trust Connections Data
 // ===========================
-export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser) => {
+export async function GET() {
   try {
     const supabase = await createClient()
-
-    console.log("[Trust Connections] Fetching for user:", user.id)
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     // Get connections where this user is the recipient
     const { data: sharedWithMe, error: sharedError } = await supabase
@@ -74,20 +76,27 @@ export const GET = withSupabaseAuth(async (_req: NextRequest, user: SupabaseUser
       sharedByMe: sharedByMe || [],
       pendingRequests: pendingRequests || [],
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
     console.error("[Trust Connections] Error:", err)
-    return NextResponse.json({ success: false, message: "Server error", error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Server error", error: message }, { status: 500 })
   }
-})
+}
 
 // ===========================
 // POST: Create/Update Connection
 // ===========================
-export const POST = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
+export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json()
     const { recipientEmail, action } = body
-    const supabase = await createClient()
 
     if (!recipientEmail) {
       return NextResponse.json({ success: false, message: "Recipient email required" }, { status: 400 })
@@ -166,23 +175,30 @@ export const POST = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser
     }
 
     return NextResponse.json({ success: false, message: "Invalid action" }, { status: 400 })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
     console.error("[Trust Connections] POST Error:", err)
     return NextResponse.json(
-      { success: false, message: "Failed to process request", error: err.message },
+      { success: false, message: "Failed to process request", error: message },
       { status: 500 }
     )
   }
-})
+}
 
 // ===========================
 // DELETE: Remove Connection
 // ===========================
-export const DELETE = withSupabaseAuth(async (req: NextRequest, user: SupabaseUser) => {
+export async function DELETE(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json()
     const { connectionId } = body
-    const supabase = await createClient()
 
     if (!connectionId) {
       return NextResponse.json({ success: false, message: "Connection ID required" }, { status: 400 })
@@ -198,11 +214,12 @@ export const DELETE = withSupabaseAuth(async (req: NextRequest, user: SupabaseUs
     if (error) throw error
 
     return NextResponse.json({ success: true, message: "Connection removed" })
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error"
     console.error("[Trust Connections] DELETE Error:", err)
     return NextResponse.json(
-      { success: false, message: "Failed to remove connection", error: err.message },
+      { success: false, message: "Failed to remove connection", error: message },
       { status: 500 }
     )
   }
-})
+}
