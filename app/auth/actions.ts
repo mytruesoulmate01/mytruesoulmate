@@ -4,6 +4,20 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
+/**
+ * Get the base URL for redirects
+ * Priority: NEXT_PUBLIC_APP_URL > NEXT_PUBLIC_VERCEL_URL > localhost
+ */
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  return 'http://localhost:3000'
+}
+
 export type AuthResult = {
   success?: boolean
   message?: string
@@ -47,7 +61,7 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000'}/auth/callback`,
+      emailRedirectTo: `${getBaseUrl()}/auth/callback`,
       data: {
         full_name: fullName || null,
       },
@@ -138,7 +152,7 @@ export async function resetPassword(formData: FormData): Promise<AuthResult> {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000'}/auth/callback?next=/reset-password`,
+    redirectTo: `${getBaseUrl()}/auth/callback?next=/reset-password`,
   })
 
   if (error) {
