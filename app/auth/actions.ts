@@ -4,6 +4,14 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
+/**
+ * Get the base URL for redirects
+ * Uses the official production URL
+ */
+function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://www.mytruesoulmate.com'
+}
+
 export type AuthResult = {
   success?: boolean
   message?: string
@@ -47,7 +55,7 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000'}/auth/callback`,
+      emailRedirectTo: `${getBaseUrl()}/auth/callback`,
       data: {
         full_name: fullName || null,
       },
@@ -138,7 +146,7 @@ export async function resetPassword(formData: FormData): Promise<AuthResult> {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000'}/auth/callback?next=/reset-password`,
+    redirectTo: `${getBaseUrl()}/auth/callback?next=/reset-password`,
   })
 
   if (error) {
