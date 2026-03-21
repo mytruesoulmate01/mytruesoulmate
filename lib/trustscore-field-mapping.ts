@@ -43,15 +43,13 @@ export function organizeTrustScoreDataBySections(userData: Record<string, any>) 
   TRUSTSCORE_SECTIONS.forEach((section) => {
     const sectionData: Record<string, any> = {}
 
+    // Include ALL fields for trust score display - show null/undefined as empty
     section.fields.forEach((field) => {
-      if (userData && userData[field] !== undefined) {
-        sectionData[field] = userData[field]
-      }
+      sectionData[field] = userData ? userData[field] : null
     })
 
-    if (Object.keys(sectionData).length > 0) {
-      organizedData[section.title] = sectionData
-    }
+    // Always include the section (even if all values are null)
+    organizedData[section.title] = sectionData
   })
 
   return organizedData

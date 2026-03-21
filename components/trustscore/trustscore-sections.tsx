@@ -12,11 +12,7 @@ export function TrustScoreSections({ userData, isTrusted }: TrustScoreSectionsPr
   return (
     <div className="grid grid-cols-1 gap-6">
       {TRUSTSCORE_SECTIONS.map((section) => {
-        const sectionData = organizedData[section.title]
-
-        if (!sectionData || Object.keys(sectionData).length === 0) {
-          return null
-        }
+        const sectionData = organizedData[section.title] || {}
 
         return (
           <TrustScoreSection
