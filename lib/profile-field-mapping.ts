@@ -87,6 +87,35 @@ export const getSectionForField = (fieldName: string): ProfileSection | null => 
   return PROFILE_SECTIONS.find((section) => section.fields.includes(fieldName)) || null
 }
 
+// Get all profile fields that count towards trust score
+export const getAllProfileFields = (): string[] => {
+  return PROFILE_SECTIONS.flatMap((section) => section.fields)
+}
+
+// Get max possible trust score (total number of profile fields)
+export const getMaxTrustScore = (): number => {
+  return getAllProfileFields().length
+}
+
+// Check if a value is valid (not null, undefined, empty array, or placeholder values)
+export const isFieldFilled = (val: any): boolean => {
+  if (val === null || val === undefined) return false
+  if (val === "NA" || val === "Not Available") return false
+  if (Array.isArray(val) && val.length === 0) return false
+  if (val === 0 || val === "0") return false
+  if (typeof val === "string" && val.trim() === "") return false
+  return true
+}
+
+// Calculate trust score from user data
+export const calculateTrustScore = (userData: Record<string, any>): { score: number; maxScore: number; percentage: number } => {
+  const profileFields = getAllProfileFields()
+  const score = profileFields.reduce((sum, field) => sum + (isFieldFilled(userData[field]) ? 1 : 0), 0)
+  const maxScore = profileFields.length
+  const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0
+  return { score, maxScore, percentage }
+}
+
 // Helper function to organize user data by sections
 export const organizeDataBySections = (userData: Record<string, any>) => {
   const organizedData: Record<string, Record<string, any>> = {}
