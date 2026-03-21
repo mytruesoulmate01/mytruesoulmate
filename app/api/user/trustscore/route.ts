@@ -17,15 +17,11 @@ export async function GET() {
     }
 
     // Fetch user details from the user_details table
-    console.log("[v0] Fetching user_details for user_id:", user.id)
     const { data: userDetails, error: detailsError } = await supabase
       .from("user_details")
       .select("*")
       .eq("user_id", user.id)
       .single()
-
-    console.log("[v0] userDetails result:", userDetails)
-    console.log("[v0] detailsError:", detailsError)
 
     if (detailsError && detailsError.code !== "PGRST116") {
       console.error("[API][Trustscore] Error fetching user details:", detailsError)

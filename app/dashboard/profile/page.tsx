@@ -32,8 +32,6 @@ function TrustProfileContent() {
       })
 
       const data = await res.json()
-      console.log("[v0] API response:", data)
-      console.log("[v0] User data:", data.user)
       if (!res.ok || !data?.success) throw new Error("Failed to fetch trustscore")
 
       setUserData(data.user)
