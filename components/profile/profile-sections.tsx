@@ -8,7 +8,9 @@ interface ProfileSectionsProps {
 }
 
 export function ProfileSections({ userData, isTrusted }: ProfileSectionsProps) {
+  console.log("[v0] ProfileSections userData:", userData)
   const organizedData = organizeDataBySections(userData)
+  console.log("[v0] Organized data:", organizedData)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
