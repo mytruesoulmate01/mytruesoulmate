@@ -9,6 +9,7 @@ interface LogEntry {
   duration?: number
   error?: string
   stack?: string
+
 }
 
 class Logger {
