@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
 
     const edgeFunctionUrl = `${supabaseUrl}/functions/v1/check-email`
     
+    console.log("Calling Edge Function:", edgeFunctionUrl)
+    console.log("Email to check:", trimmedEmail)
+    
     const response = await fetch(edgeFunctionUrl, {
       method: "POST",
       headers: {
@@ -49,11 +52,15 @@ export async function POST(req: NextRequest) {
     })
 
     const result = await response.json()
+    
+    console.log("Edge Function response status:", response.status)
+    console.log("Edge Function result:", result)
 
     if (!response.ok || !result.exists) {
       return NextResponse.json({ 
         success: false, 
-        message: "User not registered. Please enter a valid registered email." 
+        message: "User not registered. Please enter a valid registered email.",
+        debug: { status: response.status, result }
       }, { status: 404 })
     }
 
