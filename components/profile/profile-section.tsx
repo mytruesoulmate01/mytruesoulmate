@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getFieldLabel } from "@/lib/profile-field-mapping"
 
 interface ProfileSectionProps {
   title: string
@@ -40,7 +41,7 @@ export function ProfileSection({ title, icon, data, isTrusted }: ProfileSectionP
                 return (
                   <tr key={key} className={isEven ? "bg-gray-100" : "bg-white"}>
                     <td className="py-3 px-4 font-medium uppercase text-gray-800 text-sm border-r border-gray-200">
-                      {key.replace(/_/g, " ")}
+                      {getFieldLabel(key)}
                     </td>
                     <td
                       className={`py-3 px-4 text-sm ${
