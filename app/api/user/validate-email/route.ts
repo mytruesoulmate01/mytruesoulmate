@@ -42,11 +42,14 @@ export async function POST(req: NextRequest) {
     console.log("Calling Edge Function:", edgeFunctionUrl)
     console.log("Email to check:", trimmedEmail)
     
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
     const response = await fetch(edgeFunctionUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+        "x-api-key": apiKey,
       },
       body: JSON.stringify({ email: trimmedEmail }),
     })
