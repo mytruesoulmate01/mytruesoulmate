@@ -11,6 +11,7 @@ interface LogEntry {
   stack?: string
 
 
+
 }
 
 class Logger {
