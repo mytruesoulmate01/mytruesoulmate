@@ -47,7 +47,13 @@ function TrustProfileContent() {
     fetchProfile()
   }, [])
 
-  const isTrusted = (val: any) => !(val === "NA" || val === "Not Available" || val === null || val === undefined)
+  const isTrusted = (val: any) => {
+    if (val === null || val === undefined) return false
+    if (val === "NA" || val === "Not Available") return false
+    if (Array.isArray(val) && val.length === 0) return false
+    if (typeof val === "string" && val.trim() === "") return false
+    return true
+  }
 
   if (!jwtUser) return null
   if (loading)
