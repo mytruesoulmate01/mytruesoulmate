@@ -29,6 +29,14 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
     title: "LIFESTYLE DETAILS",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
   },
+  {
+    title: "DRUG TEST DETAILS",
+    fields: ["drug_test_status"],
+  },
+  {
+    title: "CIBIL SCORE DETAILS",
+    fields: ["cibil_score"],
+  },
 ]
 
 // Field display labels for better readability
@@ -75,6 +83,8 @@ export const FIELD_LABELS: Record<string, string> = {
   hobbies: "Hobbies",
   interests: "Interests",
   languages_known: "Languages Known",
+  drug_test_status: "Drug Test Status",
+  cibil_score: "CIBIL Score",
 }
 
 // Helper function to get display label for a field
