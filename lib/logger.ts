@@ -10,6 +10,7 @@ interface LogEntry {
   error?: string
   stack?: string
 
+
 }
 
 class Logger {
