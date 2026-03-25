@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
-// POST: Validate if email exists in user_details table
+// POST: Validate if email exists using Supabase Edge Function
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
@@ -28,28 +28,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "You cannot share with yourself" }, { status: 400 })
     }
 
-    // Check if email exists in user_details table
-    const { data: userData, error: userError } = await supabase
-      .from("user_details")
-      .select("id, email, full_name")
-      .eq("email", trimmedEmail)
-      .single()
+    // Check if email exists using Supabase Edge Function
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const apiKey = process.env.check_email_api_key
 
-    if (userError || !userData) {
+    if (!supabaseUrl || !apiKey) {
+      console.error("Missing environment variables for email check")
+      return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 })
+    }
+
+    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/check-email`
+    
+    const response = await fetch(edgeFunctionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+      },
+      body: JSON.stringify({ email: trimmedEmail }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok || !result.exists) {
       return NextResponse.json({ 
         success: false, 
         message: "User not registered. Please enter a valid registered email." 
       }, { status: 404 })
     }
 
-    // User found - return success with user info
+    // User found - get additional details from user_details if available
+    const { data: userDetails } = await supabase
+      .from("user_details")
+      .select("full_name, user_id")
+      .eq("email", trimmedEmail)
+      .single()
+
     return NextResponse.json({
       success: true,
       message: "User found",
       recipient: {
-        id: userData.id,
-        email: userData.email,
-        name: userData.full_name || "User"
+        id: userDetails?.user_id || trimmedEmail,
+        email: trimmedEmail,
+        name: userDetails?.full_name || "User"
       }
     })
 
