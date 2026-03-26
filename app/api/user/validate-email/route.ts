@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "You cannot share with yourself" }, { status: 400 })
     }
 
-    // Check if email exists in registered_users table (email_id contains array of emails as text)
+    // Check if email exists in registered_users table (email_id is text[] array)
     console.log("[validate-email] Searching for email_id:", trimmedEmail)
     
     const { data: userData, error: userError } = await supabase
       .from("registered_users")
       .select("email_id")
-      .ilike("email_id", `%${trimmedEmail}%`)
+      .contains("email_id", [trimmedEmail])
       .single()
 
     console.log("[validate-email] Query result - userData:", userData)
