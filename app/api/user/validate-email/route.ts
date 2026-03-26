@@ -28,13 +28,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "You cannot share with yourself" }, { status: 400 })
     }
 
-    // Check if email exists in registered_users table
+    // Check if email exists in registered_users table (email_id contains array of emails as text)
     console.log("[validate-email] Searching for email_id:", trimmedEmail)
     
     const { data: userData, error: userError } = await supabase
       .from("registered_users")
       .select("email_id")
-      .ilike("email_id", trimmedEmail)
+      .ilike("email_id", `%${trimmedEmail}%`)
       .single()
 
     console.log("[validate-email] Query result - userData:", userData)
@@ -43,8 +43,7 @@ export async function POST(req: NextRequest) {
     if (userError || !userData) {
       return NextResponse.json({ 
         success: false, 
-        message: "User not registered. Please enter a valid registered email.",
-        debug: { error: userError?.message, code: userError?.code, email: trimmedEmail }
+        message: "User not registered. Please enter a valid registered email."
       }, { status: 404 })
     }
 
