@@ -29,22 +29,16 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email exists in user_details table (using email_id column)
-    console.log("Searching for email_id:", trimmedEmail)
-    
     const { data: userData, error: userError } = await supabase
       .from("user_details")
-      .select("user_id, email_id, full_name")
+      .select("email_id")
       .ilike("email_id", trimmedEmail)
       .single()
-
-    console.log("Query result - userData:", userData)
-    console.log("Query result - userError:", userError)
 
     if (userError || !userData) {
       return NextResponse.json({ 
         success: false, 
-        message: "User not registered. Please enter a valid registered email.",
-        debug: { error: userError?.message, email: trimmedEmail }
+        message: "User not registered. Please enter a valid registered email."
       }, { status: 404 })
     }
 
@@ -53,9 +47,9 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "User found",
       recipient: {
-        id: userData.user_id,
+        id: userData.email_id,
         email: userData.email_id,
-        name: userData.full_name || "User"
+        name: "User"
       }
     })
 
