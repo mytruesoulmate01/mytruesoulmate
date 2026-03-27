@@ -72,8 +72,7 @@ export async function POST(req: NextRequest) {
     // Build share data object with all profile fields
     const shareData: Record<string, any> = {
       user_id: user.id,
-      recipient_email: recipientEmail,
-      recipient_id: recipientId,
+      trustshare_email_id: recipientEmail,
       share_enabled: true,
     }
 
@@ -87,7 +86,7 @@ export async function POST(req: NextRequest) {
       .from("user_share_details")
       .select("id")
       .eq("user_id", user.id)
-      .eq("recipient_email", recipientEmail)
+      .eq("trustshare_email_id", recipientEmail)
       .single()
 
     if (existing) {
@@ -96,7 +95,7 @@ export async function POST(req: NextRequest) {
         .from("user_share_details")
         .update(shareData)
         .eq("user_id", user.id)
-        .eq("recipient_email", recipientEmail)
+        .eq("trustshare_email_id", recipientEmail)
 
       if (error) throw error
     } else {
@@ -137,7 +136,7 @@ export async function DELETE(req: NextRequest) {
         .from("user_share_details")
         .delete()
         .eq("user_id", user.id)
-        .eq("recipient_email", recipientEmail)
+        .eq("trustshare_email_id", recipientEmail)
 
       if (error) throw error
     } else {
