@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email exists in registered_users table (email_id is text[] array)
-    console.log("[validate-email] Searching for email_id:", trimmedEmail)
+    console.log("[validate-email] Searching for email:", trimmedEmail)
     
     const { data: userData, error: userError } = await supabase
       .from("registered_users")
@@ -37,8 +37,11 @@ export async function POST(req: NextRequest) {
       .contains("email_id", [trimmedEmail])
       .single()
 
-    console.log("[validate-email] Query result - userData:", userData)
-    console.log("[validate-email] Query result - userError:", userError)
+    if (userData) {
+      console.log("[validate-email] ✅ Email found - user is registered")
+    } else {
+      console.log("[validate-email] ❌ Email not found -", userError?.message || "user not registered")
+    }
 
     if (userError || !userData) {
       return NextResponse.json({ 
