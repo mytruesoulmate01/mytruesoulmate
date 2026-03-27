@@ -433,14 +433,14 @@ function SharingPreferencesContent() {
 
             return (
               <Card key={section.title} className="overflow-hidden">
-                <CardHeader className="bg-gray-100 dark:bg-gray-700 py-3">
+                <CardHeader className="bg-gradient-to-r from-red-600 to-rose-600 py-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{section.title}</CardTitle>
+                    <CardTitle className="text-lg text-white">{section.title}</CardTitle>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleSectionToggle(section.fields, !allSelected)}
-                      className="text-sm"
+                      className="text-sm text-white hover:text-white hover:bg-white/20"
                     >
                       {allSelected ? "Deselect All" : "Select All"}
                     </Button>
