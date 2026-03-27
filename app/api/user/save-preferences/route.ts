@@ -59,25 +59,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Invalid input format" }, { status: 400 })
     }
 
-    const { recipientEmail, recipientId, fields } = body
+    const { recipientEmail, fields } = body
 
-    if (!recipientEmail || !recipientId) {
-      return NextResponse.json({ success: false, message: "Recipient information required" }, { status: 400 })
+    if (!recipientEmail) {
+      return NextResponse.json({ success: false, message: "Recipient email required" }, { status: 400 })
     }
 
     if (!fields || typeof fields !== "object") {
       return NextResponse.json({ success: false, message: "Fields selection required" }, { status: 400 })
     }
 
-    // Build share data object with all profile fields
+    // Build share data object
     const shareData: Record<string, any> = {
       user_id: user.id,
       trustshare_email_id: recipientEmail,
     }
 
-    // Add all field selections (true/false for each field)
+    // Add all field selections as "true" or "false" strings (TEXT columns)
     ALL_SHARE_FIELDS.forEach((field) => {
-      shareData[field] = fields[field] ?? false
+      shareData[field] = fields[field] ? "true" : "false"
     })
 
     // Check if sharing entry already exists for this user-recipient pair
