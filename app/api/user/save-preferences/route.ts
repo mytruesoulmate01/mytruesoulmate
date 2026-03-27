@@ -82,31 +82,14 @@ export async function POST(req: NextRequest) {
       })
     })
 
-    // Check if sharing entry already exists for this user-recipient pair
-    const { data: existing } = await supabase
+    // Upsert - insert or update if exists (based on user_id + trustshare_email_id unique constraint)
+    const { error } = await supabase
       .from("user_share_details")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("trustshare_email_id", recipientEmail)
-      .single()
+      .upsert(shareData, { 
+        onConflict: "user_id,trustshare_email_id"
+      })
 
-    if (existing) {
-      // Update existing record
-      const { error } = await supabase
-        .from("user_share_details")
-        .update(shareData)
-        .eq("user_id", user.id)
-        .eq("trustshare_email_id", recipientEmail)
-
-      if (error) throw error
-    } else {
-      // Insert new record
-      const { error } = await supabase
-        .from("user_share_details")
-        .insert(shareData)
-
-      if (error) throw error
-    }
+    if (error) throw error
 
     return NextResponse.json({ success: true, message: "Sharing preferences saved" })
   } catch (err: unknown) {

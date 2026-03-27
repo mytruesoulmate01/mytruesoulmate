@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "User found",
       recipient: {
-        id: userData.email_id,
-        email: userData.email_id,
+        id: trimmedEmail,
+        email: trimmedEmail,
         name: "User"
       }
     })
