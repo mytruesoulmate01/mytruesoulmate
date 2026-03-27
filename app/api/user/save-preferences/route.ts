@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { ALL_SHARE_FIELDS } from "@/lib/share-field-mapping"
+import { TRUST_SHARE_SECTIONS } from "@/lib/trust-share-mapping"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -31,7 +31,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      fields: ALL_SHARE_FIELDS,
+      sections: TRUST_SHARE_SECTIONS,
       sharingData: sharingData || [],
     })
   } catch (err) {
@@ -76,8 +76,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Add all field selections as "true" or "false" strings (TEXT columns)
-    ALL_SHARE_FIELDS.forEach((field) => {
-      shareData[field] = fields[field] ? "true" : "false"
+    TRUST_SHARE_SECTIONS.forEach((section) => {
+      section.fields.forEach((field) => {
+        shareData[field] = fields[field] ? "true" : "false"
+      })
     })
 
     // Check if sharing entry already exists for this user-recipient pair
