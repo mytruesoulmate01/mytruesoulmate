@@ -73,7 +73,6 @@ export async function POST(req: NextRequest) {
     const shareData: Record<string, any> = {
       user_id: user.id,
       trustshare_email_id: recipientEmail,
-      share_enabled: true,
     }
 
     // Add all field selections (true/false for each field)
