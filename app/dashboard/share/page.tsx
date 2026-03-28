@@ -287,7 +287,7 @@ function SharingPreferencesContent() {
       {step === 1 && sharedEntries.length > 0 && (
         <Card className="mb-6">
           <CardHeader className="bg-gray-100 dark:bg-gray-700 py-3">
-            <CardTitle className="text-lg">Your Shared Connections</CardTitle>
+            <CardTitle className="text-lg">Trust Share Details</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             {isLoadingEntries ? (
