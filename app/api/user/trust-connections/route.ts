@@ -53,16 +53,18 @@ export async function GET() {
     for (const shareEntry of (sharedWithMe || [])) {
       const sharerId = shareEntry.user_id // The user who shared their details
 
-      // Get the sharer's email from user_details
-      const { data: sharerProfile, error: profileError } = await supabase
-        .from("user_details")
+      // Get the sharer's email from registered_users table (email_id is text[] array)
+      const { data: sharerUser, error: userError } = await supabase
+        .from("registered_users")
         .select("email_id")
         .eq("user_id", sharerId)
         .single()
 
+      const sharerEmail = sharerUser?.email_id?.[0] || sharerId
+
       // Build the shared data object with field flags (true/false)
       const sharedData: { [key: string]: any } = {
-        person_email: sharerProfile?.email_id?.[0] || sharerId, // Email of person who shared
+        person_email: sharerEmail, // Email of person who shared
         sharer_id: sharerId,
       }
 
