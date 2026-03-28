@@ -53,20 +53,13 @@ export async function GET() {
     for (const shareEntry of (sharedWithMe || [])) {
       const sharerId = shareEntry.user_id // The user who shared their details
       
-      // Get the sharer's email from user_details table using email_id field
-      let sharerEmail = sharerId
+      // Get the sharer's email from email_id column in user_share_details itself
+      // email_id in user_share_details belongs to the person who is sharing
+      let sharerEmail = shareEntry.email_id || sharerId
       
-      const { data: userDetailsData } = await supabase
-        .from("user_details")
-        .select("email_id")
-        .eq("user_id", sharerId)
-        .single()
-      
-      if (userDetailsData?.email_id) {
-        // email_id is stored as text[] array in user_details
-        sharerEmail = Array.isArray(userDetailsData.email_id) 
-          ? userDetailsData.email_id[0] 
-          : userDetailsData.email_id
+      // Handle if email_id is an array
+      if (Array.isArray(sharerEmail)) {
+        sharerEmail = sharerEmail[0]
       }
       
       console.log("[Trust Connections] Sharer ID:", sharerId, "Email:", sharerEmail)
