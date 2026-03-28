@@ -59,7 +59,7 @@ export async function GET() {
         success: true,
         user: {
           ...userData,
-          email: user.email,
+          email_id: user.email,
         },
         trustscore,
       },

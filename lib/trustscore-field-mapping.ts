@@ -8,7 +8,7 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Personal Details",
     icon: "👤",
-    fields: ["date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
     title: "Physical Details",
