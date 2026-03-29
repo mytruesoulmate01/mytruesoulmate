@@ -50,7 +50,23 @@ export async function POST(req: NextRequest) {
       }, { status: 404 })
     }
 
-    // User found - return success with user info
+    // Check if share already exists in trustshare_details
+    const { data: existingShare } = await supabase
+      .from("trustshare_details")
+      .select("trustshare_email_id")
+      .eq("user_id", user.id)
+      .eq("trustshare_email_id", trimmedEmail)
+      .single()
+
+    if (existingShare) {
+      console.log("[validate-email] ⚠️ Share already exists for this recipient")
+      return NextResponse.json({ 
+        success: false, 
+        message: "You have already shared your details with this user. Please edit your existing share from the list below."
+      }, { status: 409 })
+    }
+
+    // User found and no existing share - return success with user info
     return NextResponse.json({
       success: true,
       message: "User found",
