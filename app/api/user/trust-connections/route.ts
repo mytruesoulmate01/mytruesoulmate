@@ -29,10 +29,10 @@ export async function GET() {
 
     console.log("[Trust Connections] Fetching shares for:", loggedInEmail)
 
-    // Get all rows from user_share_details where trustshare_email_id = logged-in user's email
+    // Get all rows from trustshare_details where trustshare_email_id = logged-in user's email
     // These are details that OTHER users have shared WITH the logged-in user
     const { data: sharedWithMe, error: sharedError } = await supabase
-      .from("user_share_details")
+      .from("trustshare_details")
       .select("*")
       .eq("trustshare_email_id", loggedInEmail)
 

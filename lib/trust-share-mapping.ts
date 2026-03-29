@@ -1,11 +1,11 @@
-// Trust Share field mapping for user_share_details table
+// Trust Share field mapping for trustshare_details table
 
 export interface TrustShareSection {
   title: string
   fields: string[]
 }
 
-// Sections for Trust Share - maps to user_share_details table columns
+// Sections for Trust Share - maps to trustshare_details table columns
 export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   {
     title: "PERSONAL DETAILS",

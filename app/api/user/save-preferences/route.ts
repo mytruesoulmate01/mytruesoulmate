@@ -20,12 +20,12 @@ export async function GET() {
 
     // Get user's share details
     const { data: sharingData, error } = await supabase
-      .from("user_share_details")
+      .from("trustshare_details")
       .select("*")
       .eq("user_id", user.id)
 
     if (error) {
-      console.error("[GET user_share_details] Error:", error)
+      console.error("[GET trustshare_details] Error:", error)
       throw error
     }
 
@@ -35,7 +35,7 @@ export async function GET() {
       sharingData: sharingData || [],
     })
   } catch (err) {
-    console.error("[GET user_share_details] Error:", err)
+    console.error("[GET trustshare_details] Error:", err)
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 })
   }
 }
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     // Upsert - insert or update if exists (based on user_id + trustshare_email_id unique constraint)
     const { error } = await supabase
-      .from("user_share_details")
+      .from("trustshare_details")
       .upsert(shareData, { 
         onConflict: "user_id,trustshare_email_id"
       })
@@ -117,7 +117,7 @@ export async function DELETE(req: NextRequest) {
     if (recipientEmail) {
       // Delete specific sharing entry
       const { error } = await supabase
-        .from("user_share_details")
+        .from("trustshare_details")
         .delete()
         .eq("user_id", user.id)
         .eq("trustshare_email_id", recipientEmail)
@@ -126,7 +126,7 @@ export async function DELETE(req: NextRequest) {
     } else {
       // Delete all sharing entries for user
       const { error } = await supabase
-        .from("user_share_details")
+        .from("trustshare_details")
         .delete()
         .eq("user_id", user.id)
 
