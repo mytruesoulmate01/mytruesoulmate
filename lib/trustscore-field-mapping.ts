@@ -35,6 +35,21 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
     icon: "🌿",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
   },
+  {
+    title: "Drug Test Details",
+    icon: "🧪",
+    fields: ["drug_test_status"],
+  },
+  {
+    title: "CIBIL Score Details",
+    icon: "📊",
+    fields: ["cibil_score"],
+  },
+  {
+    title: "Criminal Record Details",
+    icon: "📋",
+    fields: ["criminal_record"],
+  },
 ]
 
 export function organizeTrustScoreDataBySections(userData: Record<string, any>) {
