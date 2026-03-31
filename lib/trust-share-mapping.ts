@@ -9,7 +9,7 @@ export interface TrustShareSection {
 export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
     title: "PHYSICAL DETAILS",
@@ -47,6 +47,7 @@ export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
 
 // Field display labels for Trust Share
 export const TRUST_SHARE_LABELS: Record<string, string> = {
+  name: "Name",
   email_id: "Email ID",
   date_of_birth: "Date of Birth",
   gender: "Gender",
