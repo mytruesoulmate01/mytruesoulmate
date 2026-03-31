@@ -7,7 +7,7 @@ export interface ProfileSection {
 export const PROFILE_SECTIONS: ProfileSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
     title: "PHYSICAL DETAILS",
@@ -45,6 +45,7 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
 
 // Field display labels for better readability
 export const FIELD_LABELS: Record<string, string> = {
+  name: "Name",
   email_id: "Email ID",
   date_of_birth: "Date of Birth",
   gender: "Gender",
