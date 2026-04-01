@@ -1,16 +1,10 @@
-import { formatConnectionFieldName } from "./trust-connection-field-config"
+import { TRUST_SHARE_SECTIONS, TRUST_SHARE_LABELS } from "./trust-share-mapping"
 
-// Section configuration for organizing connection fields
-export const connectionSectionConfig = {
-  "Personal Details": ["name", "address", "mobile_number", "age", "gender", "email_id"],
-  "Social Media Details": ["facebook", "instagram", "twitter", "linkedin"],
-  "Education Details": ["education"],
-  "Marriage Details": ["engagement", "marriage"],
-  "Employment Details": ["employment", "income"],
-  "Family Details": ["father_name", "mother_name", "brother_name", "sister_name"],
-  "Criminal Record": ["court_case", "police_record"],
-  Expectations: ["expectation_details"],
-}
+// Build section configuration from TRUST_SHARE_SECTIONS
+export const connectionSectionConfig: { [key: string]: string[] } = {}
+TRUST_SHARE_SECTIONS.forEach((section) => {
+  connectionSectionConfig[section.title] = section.fields
+})
 
 /**
  * Organize connection data into sections
@@ -38,7 +32,7 @@ export function organizeConnectionDataIntoSections(connectionData: any) {
  * @returns Formatted field name
  */
 export function formatConnectionField(fieldName: string): string {
-  return formatConnectionFieldName(fieldName)
+  return TRUST_SHARE_LABELS[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 /**
@@ -49,8 +43,8 @@ export function formatConnectionField(fieldName: string): string {
 export function getConnectionPeople(connectionsData: any[]): string[] {
   const people = new Set<string>()
   connectionsData.forEach((connection) => {
-    if (connection.user_email) {
-      people.add(connection.user_email)
+    if (connection.person_email) {
+      people.add(connection.person_email)
     }
   })
   return Array.from(people)

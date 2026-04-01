@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import ProtectedRoute from "@/components/protected-route"
 import { TrustScoreSections } from "@/components/trustscore/trustscore-sections"
 import { TrustScoreBadge } from "@/components/profile/trust-score-badge"
+import { calculateTrustScore, isFieldFilled } from "@/lib/profile-field-mapping"
 
 type AnyRec = Record<string, any>
 
@@ -49,13 +50,11 @@ function TrustProfileContent() {
     fetchProfile()
   }, [])
 
-  const isTrusted = (val: any) => !(val === "NA" || val === "Not Available" || val === null || val === undefined)
+  // Use centralized helper function for checking field values
+  const isTrusted = isFieldFilled
 
-  const totalTrustScore = userData
-    ? Object.entries(userData)
-        .filter(([key]) => key !== "user_id" && key !== "truscore")
-        .reduce((sum, [, value]) => sum + (isTrusted(value) ? 5 : 0), 0)
-    : 0
+  // Calculate trust score using helper: 1 point per filled field, 0 for empty/null
+  const trustScoreData = userData ? calculateTrustScore(userData) : { score: 0, maxScore: 42, percentage: 0 }
 
   if (!jwtUser) return null
   if (loading) return <div className="p-8 text-lg">Loading trust profile...</div>
@@ -73,7 +72,7 @@ function TrustProfileContent() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8">
           <div className="bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold py-3 px-8 text-lg rounded-lg shadow-lg">
-            Trust Score: {totalTrustScore}
+            Trust Score: {trustScoreData.score} / {trustScoreData.maxScore} ({trustScoreData.percentage}%)
           </div>
 
           <Button

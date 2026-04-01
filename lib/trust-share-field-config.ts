@@ -27,7 +27,7 @@ export const TRUST_SHARE_FIELD_ORDER = [
 ]
 
 /**
- * Get fields in the predefined order, filtering out any that don't exist in the data
+ *  Get fields in the predefined order, filtering out any that don't exist in the data
  * @param availableFields - Set of fields available from the API data
  * @returns Array of field names in the specified order
  */

@@ -1,44 +1,21 @@
 // Share-specific field mapping that organizes fields into logical sections
-// Extends the existing field configuration for sharing context
+// Synced with profile-field-mapping.ts for consistency
 
-import { formatShareFieldName } from "./trust-share-field-config"
+import { PROFILE_SECTIONS, FIELD_LABELS, getFieldLabel } from "./profile-field-mapping"
 
 export interface ShareFieldSection {
   title: string
   fields: string[]
 }
 
-// Define sections for organizing share fields
-export const SHARE_SECTIONS: ShareFieldSection[] = [
-  {
-    title: "Personal Details",
-    fields: ["name", "address", "mobile_number", "age", "gender", "email_id"],
-  },
-  {
-    title: "Social Media Details",
-    fields: ["facebook", "instagram", "twitter", "linkedin"],
-  },
-  {
-    title: "Education & Employment",
-    fields: ["education", "employment", "income"],
-  },
-  {
-    title: "Marriage Details",
-    fields: ["engagement", "marriage"],
-  },
-  {
-    title: "Family Details",
-    fields: ["father_name", "mother_name", "brother_name", "sister_name"],
-  },
-  {
-    title: "Criminal Record",
-    fields: ["court_case", "police_record"],
-  },
-  {
-    title: "Expectations",
-    fields: ["expectation_details"],
-  },
-]
+// Use same sections as profile-field-mapping.ts
+export const SHARE_SECTIONS: ShareFieldSection[] = PROFILE_SECTIONS.map((section) => ({
+  title: section.title,
+  fields: [...section.fields],
+}))
+
+// Get all shareable fields
+export const ALL_SHARE_FIELDS = SHARE_SECTIONS.flatMap((section) => section.fields)
 
 /**
  * Get sections with only fields that exist in the available data
@@ -58,5 +35,5 @@ export function getShareSections(availableFields: Set<string>): ShareFieldSectio
  * @returns Formatted field name for display
  */
 export function formatShareField(fieldName: string): string {
-  return formatShareFieldName(fieldName)
+  return getFieldLabel(fieldName)
 }

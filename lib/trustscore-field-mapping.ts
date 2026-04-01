@@ -8,37 +8,47 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Personal Details",
     icon: "👤",
-    fields: ["name", "age", "gender", "date_of_birth", "address", "mobile_number", "email_id"],
+    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
-    title: "Social Media Details",
-    icon: "📱",
-    fields: ["facebook", "instagram", "twitter", "linkedin"],
+    title: "Physical Details",
+    icon: "📏",
+    fields: ["height_cm", "weight_kg", "blood_group", "complexion", "body_type", "physical_disability"],
   },
   {
-    title: "Education Details",
+    title: "Location Details",
+    icon: "📍",
+    fields: ["country", "state", "city", "pincode", "residential_address", "native_place"],
+  },
+  {
+    title: "Education & Employment Details",
     icon: "🎓",
-    fields: ["education", "employment"],
-  },
-  {
-    title: "Marriage Details",
-    icon: "💍",
-    fields: ["marriage_status", "partner_preference"],
+    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "Family Details",
     icon: "👨‍👩‍👧‍👦",
-    fields: ["family_background", "family_income"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count", "family_type", "family_status", "family_values"],
   },
   {
-    title: "Criminal Record",
-    icon: "⚖️",
-    fields: ["criminal_record", "police_verified"],
+    title: "Lifestyle Details",
+    icon: "🌿",
+    fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
   },
   {
-    title: "Expectations",
-    icon: "💭",
-    fields: ["expectation_details", "partner_expectations"],
+    title: "Drug Test Details",
+    icon: "🧪",
+    fields: ["drug_test_status"],
+  },
+  {
+    title: "CIBIL Score Details",
+    icon: "📊",
+    fields: ["cibil_score"],
+  },
+  {
+    title: "Criminal Record Details",
+    icon: "📋",
+    fields: ["criminal_record"],
   },
 ]
 
@@ -48,15 +58,13 @@ export function organizeTrustScoreDataBySections(userData: Record<string, any>) 
   TRUSTSCORE_SECTIONS.forEach((section) => {
     const sectionData: Record<string, any> = {}
 
+    // Include ALL fields for trust score display - show null/undefined as empty
     section.fields.forEach((field) => {
-      if (userData && userData[field] !== undefined) {
-        sectionData[field] = userData[field]
-      }
+      sectionData[field] = userData ? userData[field] : null
     })
 
-    if (Object.keys(sectionData).length > 0) {
-      organizedData[section.title] = sectionData
-    }
+    // Always include the section (even if all values are null)
+    organizedData[section.title] = sectionData
   })
 
   return organizedData

@@ -8,9 +8,7 @@ interface TrustScoreSectionProps {
 }
 
 export function TrustScoreSection({ title, icon, data, isTrusted }: TrustScoreSectionProps) {
-  const hasData = Object.keys(data).length > 0
-
-  if (!hasData) return null
+  // Always show the section - Trust Score displays all fields with check/X status
 
   return (
     <Card className="shadow-lg border-0 bg-white overflow-hidden mb-4">

@@ -8,10 +8,11 @@ interface ConnectionSectionProps {
 }
 
 export function ConnectionSection({ title, fields, people, connectionsData }: ConnectionSectionProps) {
-  // Get connection status for a specific field and person
-  const getConnectionStatus = (fieldName: string, personEmail: string): boolean => {
-    const connection = connectionsData.find((conn) => conn.user_email === personEmail)
-    return connection && connection[fieldName] === true
+  // Check if a field is shared (true) for a specific person
+  const isFieldShared = (fieldName: string, personEmail: string): boolean => {
+    const connection = connectionsData.find((conn) => conn.person_email === personEmail)
+    if (!connection) return false
+    return connection[fieldName] === "true" || connection[fieldName] === true
   }
 
   const fieldEntries = Object.entries(fields)
@@ -38,7 +39,7 @@ export function ConnectionSection({ title, fields, people, connectionsData }: Co
           </td>
           {people.map((personEmail) => (
             <td key={personEmail} className="px-4 py-3 text-center border-r border-gray-200">
-              {getConnectionStatus(fieldName, personEmail) ? (
+              {isFieldShared(fieldName, personEmail) ? (
                 <span className="text-green-600 text-lg">✅</span>
               ) : (
                 <span className="text-red-500 text-lg">❌</span>

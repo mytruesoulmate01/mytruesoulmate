@@ -1,10 +1,12 @@
-export interface ProfileSection {
+// Trust Share field mapping for trustshare_details table
+
+export interface TrustShareSection {
   title: string
   fields: string[]
-  icon?: string
 }
 
-export const PROFILE_SECTIONS: ProfileSection[] = [
+// Sections for Trust Share - maps to trustshare_details table columns
+export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   {
     title: "PERSONAL DETAILS",
     fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
@@ -43,8 +45,8 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
 ]
 
-// Field display labels for better readability
-export const FIELD_LABELS: Record<string, string> = {
+// Field display labels for Trust Share
+export const TRUST_SHARE_LABELS: Record<string, string> = {
   name: "Name",
   email_id: "Email ID",
   date_of_birth: "Date of Birth",
@@ -95,56 +97,19 @@ export const FIELD_LABELS: Record<string, string> = {
 }
 
 // Helper function to get display label for a field
-export const getFieldLabel = (fieldName: string): string => {
-  return FIELD_LABELS[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+export const getTrustShareLabel = (fieldName: string): string => {
+  return TRUST_SHARE_LABELS[fieldName] || fieldName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 // Helper function to get section for a field
-export const getSectionForField = (fieldName: string): ProfileSection | null => {
-  return PROFILE_SECTIONS.find((section) => section.fields.includes(fieldName)) || null
+export const getSectionForTrustShareField = (fieldName: string): TrustShareSection | null => {
+  return TRUST_SHARE_SECTIONS.find((section) => section.fields.includes(fieldName)) || null
 }
 
-// Get all profile fields that count towards trust score
-export const getAllProfileFields = (): string[] => {
-  return PROFILE_SECTIONS.flatMap((section) => section.fields)
-}
-
-// Get max possible trust score (total number of profile fields)
-export const getMaxTrustScore = (): number => {
-  return getAllProfileFields().length
-}
-
-// Check if a value is valid (not null, undefined, empty array, or placeholder values)
-export const isFieldFilled = (val: any): boolean => {
-  if (val === null || val === undefined) return false
-  if (val === "NA" || val === "Not Available") return false
-  if (Array.isArray(val) && val.length === 0) return false
-  if (val === 0 || val === "0") return false
-  if (typeof val === "string" && val.trim() === "") return false
-  return true
-}
-
-// Calculate trust score from user data
-export const calculateTrustScore = (userData: Record<string, any>): { score: number; maxScore: number; percentage: number } => {
-  const profileFields = getAllProfileFields()
-  const score = profileFields.reduce((sum, field) => sum + (isFieldFilled(userData[field]) ? 1 : 0), 0)
-  const maxScore = profileFields.length
-  const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0
-  return { score, maxScore, percentage }
-}
-
-// Helper function to organize user data by sections
-export const organizeDataBySections = (userData: Record<string, any>) => {
-  const organizedData: Record<string, Record<string, any>> = {}
-
-  PROFILE_SECTIONS.forEach((section) => {
-    organizedData[section.title] = {}
-    section.fields.forEach((field) => {
-      if (userData[field] !== undefined) {
-        organizedData[section.title][field] = userData[field]
-      }
-    })
-  })
-
-  return organizedData
+// Get sections with only fields that exist in the available data
+export function getTrustShareSections(availableFields: Set<string>): TrustShareSection[] {
+  return TRUST_SHARE_SECTIONS.map((section) => ({
+    ...section,
+    fields: section.fields.filter((field) => availableFields.has(field)),
+  })).filter((section) => section.fields.length > 0)
 }
