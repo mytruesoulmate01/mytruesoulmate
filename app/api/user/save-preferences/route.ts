@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { TRUST_SHARE_SECTIONS } from "@/lib/trust-share-mapping"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -19,59 +20,22 @@ export async function GET() {
 
     // Get user's share details
     const { data: sharingData, error } = await supabase
-      .from("user_share_details")
+      .from("trustshare_details")
       .select("*")
       .eq("user_id", user.id)
 
     if (error) {
-      console.error("[GET user_share_details] Error:", error)
+      console.error("[GET trustshare_details] Error:", error)
       throw error
-    }
-
-    // Define available fields for sharing
-    const fields = [
-      "share_enabled",
-      "share_basic_info",
-      "share_contact_info",
-      "share_family_info",
-      "share_education_info",
-      "share_career_info",
-      "share_photos",
-      "share_trustscore",
-      "share_verification_badges",
-      "require_login_to_view",
-      "allow_download",
-      "watermark_photos",
-      "hide_contact_until_connected",
-    ]
-
-    // If no data found for this user, return defaults
-    let responseData = sharingData || []
-    if (responseData.length === 0) {
-      responseData = [{
-        share_enabled: false,
-        share_basic_info: true,
-        share_contact_info: false,
-        share_family_info: false,
-        share_education_info: true,
-        share_career_info: true,
-        share_photos: true,
-        share_trustscore: true,
-        share_verification_badges: true,
-        require_login_to_view: false,
-        allow_download: false,
-        watermark_photos: true,
-        hide_contact_until_connected: true,
-      }]
     }
 
     return NextResponse.json({
       success: true,
-      fields,
-      sharingData: responseData,
+      sections: TRUST_SHARE_SECTIONS,
+      sharingData: sharingData || [],
     })
   } catch (err) {
-    console.error("[GET user_share_details] Error:", err)
+    console.error("[GET trustshare_details] Error:", err)
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 })
   }
 }
@@ -95,52 +59,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Invalid input format" }, { status: 400 })
     }
 
-    // Check if user already has share details
-    const { data: existing } = await supabase
-      .from("user_share_details")
-      .select("id")
-      .eq("user_id", user.id)
-      .single()
+    const { recipientEmail, fields } = body
 
-    const shareData = {
+    if (!recipientEmail) {
+      return NextResponse.json({ success: false, message: "Recipient email required" }, { status: 400 })
+    }
+
+    if (!fields || typeof fields !== "object") {
+      return NextResponse.json({ success: false, message: "Fields selection required" }, { status: 400 })
+    }
+
+    // Build share data object
+    const shareData: Record<string, any> = {
       user_id: user.id,
-      share_enabled: body.share_enabled ?? false,
-      share_basic_info: body.share_basic_info ?? true,
-      share_contact_info: body.share_contact_info ?? false,
-      share_family_info: body.share_family_info ?? false,
-      share_education_info: body.share_education_info ?? true,
-      share_career_info: body.share_career_info ?? true,
-      share_photos: body.share_photos ?? true,
-      share_trustscore: body.share_trustscore ?? true,
-      share_verification_badges: body.share_verification_badges ?? true,
-      require_login_to_view: body.require_login_to_view ?? false,
-      allow_download: body.allow_download ?? false,
-      watermark_photos: body.watermark_photos ?? true,
-      hide_contact_until_connected: body.hide_contact_until_connected ?? true,
-      share_code: body.share_code || null,
-      share_url: body.share_url || null,
-      share_expires_at: body.share_expires_at || null,
-      max_views: body.max_views || null,
+      trustshare_email_id: recipientEmail,
     }
 
-    if (existing) {
-      // Update existing record
-      const { error } = await supabase
-        .from("user_share_details")
-        .update(shareData)
-        .eq("user_id", user.id)
+    // Add all field selections as "true" or "false" strings (TEXT columns)
+    TRUST_SHARE_SECTIONS.forEach((section) => {
+      section.fields.forEach((field) => {
+        shareData[field] = fields[field] ? "true" : "false"
+      })
+    })
 
-      if (error) throw error
-    } else {
-      // Insert new record
-      const { error } = await supabase
-        .from("user_share_details")
-        .insert(shareData)
+    // Upsert - insert or update if exists (based on user_id + trustshare_email_id unique constraint)
+    const { error } = await supabase
+      .from("trustshare_details")
+      .upsert(shareData, { 
+        onConflict: "user_id,trustshare_email_id"
+      })
 
-      if (error) throw error
-    }
+    if (error) throw error
 
-    return NextResponse.json({ success: true, message: "Preferences updated" })
+    return NextResponse.json({ success: true, message: "Sharing preferences saved" })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error"
     console.error("Error in POST /save-preferences:", err)
@@ -151,7 +102,7 @@ export async function POST(req: NextRequest) {
 // ===========================
 // DELETE: Remove Shared Entry
 // ===========================
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   try {
     const supabase = await createClient()
     
@@ -160,12 +111,27 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { error } = await supabase
-      .from("user_share_details")
-      .delete()
-      .eq("user_id", user.id)
+    const body = await req.json()
+    const { recipientEmail } = body
 
-    if (error) throw error
+    if (recipientEmail) {
+      // Delete specific sharing entry
+      const { error } = await supabase
+        .from("trustshare_details")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("trustshare_email_id", recipientEmail)
+
+      if (error) throw error
+    } else {
+      // Delete all sharing entries for user
+      const { error } = await supabase
+        .from("trustshare_details")
+        .delete()
+        .eq("user_id", user.id)
+
+      if (error) throw error
+    }
 
     return NextResponse.json({ success: true, message: "Sharing preferences deleted" })
   } catch (err: unknown) {

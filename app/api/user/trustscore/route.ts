@@ -28,40 +28,16 @@ export async function GET() {
       throw detailsError
     }
 
-    // Fetch trustscore data
-    const { data: trustscoreData, error: trustscoreError } = await supabase
-      .from("trustscore")
-      .select("*")
-      .eq("user_id", user.id)
-      .single()
-
-    if (trustscoreError && trustscoreError.code !== "PGRST116") {
-      console.error("[API][Trustscore] Error fetching trustscore:", trustscoreError)
-      throw trustscoreError
-    }
-
-    // Build response with user details and trustscore
+    // Build response with user details
     const userData = userDetails || {}
-    const trustscore = trustscoreData || {
-      total_score: 0,
-      score_percentage: 0,
-      trust_level: "unverified",
-      identity_verified: false,
-      education_verified: false,
-      employment_verified: false,
-      address_verified: false,
-      social_verified: false,
-      background_verified: false,
-    }
 
     return NextResponse.json(
       {
         success: true,
         user: {
           ...userData,
-          email: user.email,
+          email_id: user.email,
         },
-        trustscore,
       },
       { status: 200 }
     )

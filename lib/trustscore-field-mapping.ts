@@ -8,7 +8,7 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Personal Details",
     icon: "👤",
-    fields: ["date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
     title: "Physical Details",
@@ -34,6 +34,21 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
     title: "Lifestyle Details",
     icon: "🌿",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
+  },
+  {
+    title: "Drug Test Details",
+    icon: "🧪",
+    fields: ["drug_test_status"],
+  },
+  {
+    title: "CIBIL Score Details",
+    icon: "📊",
+    fields: ["cibil_score"],
+  },
+  {
+    title: "Criminal Record Details",
+    icon: "📋",
+    fields: ["criminal_record"],
   },
 ]
 
