@@ -102,6 +102,14 @@ function LoginForm() {
               <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">{error || urlError}</p>
+                {error?.includes("verify your email") && (
+                  <Link 
+                    href="/resend-verification" 
+                    className="block mt-2 text-red-700 underline font-medium text-xs"
+                  >
+                    Resend Confirmation Email →
+                  </Link>
+                )}
               </div>
             </div>
           </div>
