@@ -17,6 +17,7 @@ export type AuthResult = {
   message?: string
   error?: string
   email?: string
+  errorType?: "confirmed" | "unconfirmed"
 }
 
 /**
@@ -65,8 +66,20 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   if (error) {
     console.error("[Auth] Sign up error:", error.message)
     
+    // Hook error: Email already confirmed (fully registered)
     if (error.message.includes("already registered")) {
-      return { error: "This email is already registered. Please use a different email or try logging in." }
+      return { 
+        error: "This email is already registered. Please login instead.",
+        errorType: "confirmed"
+      }
+    }
+    
+    // Hook error: Email exists but not confirmed yet
+    if (error.message.includes("not confirmed yet")) {
+      return { 
+        error: "This account exists but email is not confirmed. Please check your inbox or request a new confirmation email.",
+        errorType: "unconfirmed"
+      }
     }
     
     return { error: error.message }
