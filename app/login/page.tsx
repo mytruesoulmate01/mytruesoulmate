@@ -102,11 +102,6 @@ function LoginForm() {
               <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">{error || urlError}</p>
-                {error?.includes("verify your email") && (
-                  <div className="mt-2">
-                    <p className="text-xs">Check your email inbox for the confirmation link.</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
