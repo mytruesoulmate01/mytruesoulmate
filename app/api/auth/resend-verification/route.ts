@@ -16,6 +16,26 @@ export async function POST(request: Request) {
 
     const supabase = await createClient()
 
+    // Check rate limit and if user is unconfirmed
+    const { data: result, error: rpcError } = await supabase
+      .rpc('check_resend_rate_limit', { p_email: trimmedEmail })
+
+    if (rpcError) {
+      console.error("[Auth] Rate limit check error:", rpcError.message)
+      return NextResponse.json(
+        { message: "An error occurred. Please try again." },
+        { status: 500 }
+      )
+    }
+
+    if (!result.allowed) {
+      return NextResponse.json(
+        { message: result.reason },
+        { status: result.reason.includes('Rate limit') ? 429 : 400 }
+      )
+    }
+
+    // Resend verification email
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: trimmedEmail,
@@ -33,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      message: "Verification email sent! Please check your inbox.",
+      message: `Verification email sent! You have ${result.remaining} attempt(s) remaining.`,
     })
 
   } catch (error) {
