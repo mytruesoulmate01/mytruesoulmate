@@ -36,7 +36,7 @@ export default function ResendVerificationPage() {
           router.push(`/verify-email?email=${encodeURIComponent(email)}`)
         }, 2000)
       } else {
-        setMessage({ type: "error", text: data.message || "Failed to send verification code" })
+        setMessage({ type: "error", text: data.message || "Failed to send verification email" })
       }
     } catch (error) {
       setMessage({ type: "error", text: "An error occurred. Please try again." })
@@ -52,8 +52,8 @@ export default function ResendVerificationPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
             <Mail className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Resend Verification Code</CardTitle>
-          <CardDescription>Enter your email address to receive a new 6-digit verification code</CardDescription>
+          <CardTitle className="text-2xl">Resend Verification Email</CardTitle>
+          <CardDescription>Enter your email address to receive a new confirmation link</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,7 +90,7 @@ export default function ResendVerificationPage() {
                   Sending...
                 </>
               ) : (
-                "Send Verification Code"
+                "Send Verification Email"
               )}
             </Button>
 
