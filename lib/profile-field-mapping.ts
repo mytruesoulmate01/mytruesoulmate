@@ -11,7 +11,7 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
   {
     title: "PHYSICAL DETAILS",
-    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability"],
+    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability", "diseases"],
   },
   {
     title: "LOCATION DETAILS",
@@ -71,6 +71,7 @@ export const FIELD_LABELS: Record<string, string> = {
   complexion: "Complexion",
   body_type: "Body Type",
   physical_disability: "Physical Disability",
+  diseases: "Pre-Existing Diseases (If Any)",
   country: "Country",
   state: "State",
   city: "City",

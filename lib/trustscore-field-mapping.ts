@@ -13,7 +13,7 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Physical Details",
     icon: "📏",
-    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability"],
+    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability", "diseases"],
   },
   {
     title: "Location Details",
