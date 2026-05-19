@@ -7,11 +7,11 @@ export interface ProfileSection {
 export const PROFILE_SECTIONS: ProfileSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["photo", "name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone"],
+    fields: ["photo", "name", "email_id", "date_of_birth", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone"],
   },
   {
     title: "PHYSICAL DETAILS",
-    fields: ["height_cm", "weight_kg", "blood_group", "complexion", "body_type", "physical_disability"],
+    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability"],
   },
   {
     title: "LOCATION DETAILS",
@@ -23,7 +23,7 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
   {
     title: "FAMILY MEMBER DETAILS",
-    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_names"],
   },
   {
     title: "LIFESTYLE DETAILS",
@@ -88,7 +88,7 @@ export const FIELD_LABELS: Record<string, string> = {
   father_occupation: "Father's Occupation",
   mother_name: "Mother's Name",
   mother_occupation: "Mother's Occupation",
-  siblings_count: "Number of Siblings",
+  siblings_names: "Siblings Names",
   family_type: "Family Type",
   family_status: "Family Status",
   family_values: "Family Values",
