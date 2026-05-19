@@ -7,7 +7,7 @@ export interface ProfileSection {
 export const PROFILE_SECTIONS: ProfileSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["photo", "name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone"],
   },
   {
     title: "PHYSICAL DETAILS",
@@ -23,11 +23,15 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
   {
     title: "FAMILY MEMBER DETAILS",
-    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count", "family_type", "family_status", "family_values"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count"],
   },
   {
     title: "LIFESTYLE DETAILS",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
+  },
+  {
+    title: "SOCIAL MEDIA",
+    fields: ["facebook_profile", "instagram_profile", "linkedin_profile", "twitter_profile", "whatsapp_number"],
   },
   {
     title: "DRUG TEST DETAILS",
@@ -45,6 +49,7 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
 
 // Field display labels for better readability
 export const FIELD_LABELS: Record<string, string> = {
+  photo: "Photo",
   name: "Name",
   email_id: "Email ID",
   date_of_birth: "Date of Birth",
@@ -56,6 +61,10 @@ export const FIELD_LABELS: Record<string, string> = {
   phone_number: "Phone Number",
   alternate_phone: "Alternate Phone",
   whatsapp_number: "WhatsApp Number",
+  facebook_profile: "Facebook Profile",
+  instagram_profile: "Instagram Profile",
+  linkedin_profile: "LinkedIn Profile",
+  twitter_profile: "Twitter Profile",
   height_cm: "Height (cm)",
   weight_kg: "Weight (kg)",
   blood_group: "Blood Group",
