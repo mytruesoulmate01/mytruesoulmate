@@ -23,7 +23,7 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Education & Employment Details",
     icon: "🎓",
-    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
+    fields: ["highest_education_qualification", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "Family Details",

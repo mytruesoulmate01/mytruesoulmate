@@ -19,7 +19,7 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
   {
     title: "EDUCATION & EMPLOYMENT DETAILS",
-    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
+    fields: ["highest_education_qualification", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "FAMILY MEMBER DETAILS",
@@ -78,8 +78,7 @@ export const FIELD_LABELS: Record<string, string> = {
   pincode: "Pincode",
   residential_address: "Residential Address",
   native_place: "Native Place",
-  education_level: "Education Level",
-  education_details: "Education Details",
+  highest_education_qualification: "Highest Education Qualification",
   occupation: "Occupation",
   company_name: "Company Name",
   job_title: "Job Title",
