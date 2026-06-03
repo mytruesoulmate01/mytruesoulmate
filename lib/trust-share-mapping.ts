@@ -43,6 +43,10 @@ export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
     title: "CRIMINAL RECORD DETAILS",
     fields: ["criminal_record"],
   },
+  {
+    title: "EXPECTATION DETAILS",
+    fields: ["expectation_details"],
+  },
 ]
 
 // Field display labels for Trust Share
@@ -94,6 +98,7 @@ export const TRUST_SHARE_LABELS: Record<string, string> = {
   drug_test_status: "Drug Test Status",
   cibil_score: "CIBIL Score",
   criminal_record: "Criminal Record",
+  expectation_details: "Expectation Details",
 }
 
 // Helper function to get display label for a field
