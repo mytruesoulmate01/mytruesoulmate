@@ -51,6 +51,10 @@ export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
     title: "EXPECTATION DETAILS",
     fields: ["expectation_details"],
   },
+  {
+    title: "REFERENCE DETAILS",
+    fields: ["reference1", "reference2"],
+  },
 ]
 
 // Field display labels for Trust Share
@@ -111,6 +115,8 @@ export const TRUST_SHARE_LABELS: Record<string, string> = {
   instagram_profile: "Instagram Profile",
   linkedin_profile: "LinkedIn Profile",
   twitter_profile: "Twitter Profile",
+  reference1: "Reference 1",
+  reference2: "Reference 2",
 }
 
 // Helper function to get display label for a field

@@ -49,6 +49,10 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
     title: "EXPECTATION DETAILS",
     fields: ["expectation_details"],
   },
+  {
+    title: "REFERENCE DETAILS",
+    fields: ["reference1", "reference2"],
+  },
 ]
 
 // Field display labels for better readability
@@ -106,6 +110,8 @@ export const FIELD_LABELS: Record<string, string> = {
   cibil_score: "CIBIL Score",
   criminal_record: "Criminal Record",
   expectation_details: "Expectation Details",
+  reference1: "Reference 1",
+  reference2: "Reference 2",
 }
 
 // Helper function to get display label for a field
