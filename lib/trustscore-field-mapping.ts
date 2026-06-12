@@ -8,12 +8,12 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Personal Details",
     icon: "👤",
-    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["photo", "name", "email_id", "date_of_birth", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone"],
   },
   {
     title: "Physical Details",
     icon: "📏",
-    fields: ["height_cm", "weight_kg", "blood_group", "complexion", "body_type", "physical_disability"],
+    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability", "diseases"],
   },
   {
     title: "Location Details",
@@ -23,17 +23,22 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
   {
     title: "Education & Employment Details",
     icon: "🎓",
-    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
+    fields: ["highest_education_qualification", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "Family Details",
     icon: "👨‍👩‍👧‍👦",
-    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count", "family_type", "family_status", "family_values"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_names"],
   },
   {
     title: "Lifestyle Details",
     icon: "🌿",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
+  },
+  {
+    title: "Social Media",
+    icon: "📱",
+    fields: ["facebook_profile", "instagram_profile", "linkedin_profile", "twitter_profile", "whatsapp_number"],
   },
   {
     title: "Drug Test Details",
@@ -49,6 +54,16 @@ export const TRUSTSCORE_SECTIONS: TrustScoreSection[] = [
     title: "Criminal Record Details",
     icon: "📋",
     fields: ["criminal_record"],
+  },
+  {
+    title: "Expectation Details",
+    icon: "💡",
+    fields: ["expectation_details"],
+  },
+  {
+    title: "Reference Details",
+    icon: "👥",
+    fields: ["reference1", "reference2"],
   },
 ]
 

@@ -20,6 +20,7 @@ export default function SignupPage() {
     confirmPassword: "",
   })
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [errorType, setErrorType] = useState<"confirmed" | "unconfirmed" | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,6 +75,7 @@ export default function SignupPage() {
 
     setIsSubmitting(true)
     setErrors({})
+    setErrorType(null)
 
     try {
       const formDataObj = new FormData()
@@ -85,6 +87,9 @@ export default function SignupPage() {
 
       if (result?.error) {
         setErrors({ submit: result.error })
+        if (result.errorType) {
+          setErrorType(result.errorType)
+        }
       } else if (result?.success) {
         setIsSuccess(true)
         setSuccessMessage(result.message || "Please check your email for a confirmation link.")
@@ -230,7 +235,19 @@ export default function SignupPage() {
 
             {errors.submit && (
               <Alert variant="destructive">
-                <AlertDescription>{errors.submit}</AlertDescription>
+                <AlertDescription>
+                  {errors.submit}
+                  {errorType === "confirmed" && (
+                    <Link href="/login" className="block mt-2 text-red-700 underline font-medium">
+                      Go to Login →
+                    </Link>
+                  )}
+                  {errorType === "unconfirmed" && (
+                    <Link href="/resend-verification" className="block mt-2 text-red-700 underline font-medium">
+                      Resend Verification Email →
+                    </Link>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
 

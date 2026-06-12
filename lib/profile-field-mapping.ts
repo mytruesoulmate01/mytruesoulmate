@@ -7,11 +7,11 @@ export interface ProfileSection {
 export const PROFILE_SECTIONS: ProfileSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["photo", "name", "email_id", "date_of_birth", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone"],
   },
   {
     title: "PHYSICAL DETAILS",
-    fields: ["height_cm", "weight_kg", "blood_group", "complexion", "body_type", "physical_disability"],
+    fields: ["gender", "height_cm", "weight_kg", "complexion", "physical_disability", "diseases"],
   },
   {
     title: "LOCATION DETAILS",
@@ -19,15 +19,19 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
   },
   {
     title: "EDUCATION & EMPLOYMENT DETAILS",
-    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
+    fields: ["highest_education_qualification", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "FAMILY MEMBER DETAILS",
-    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count", "family_type", "family_status", "family_values"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_names"],
   },
   {
     title: "LIFESTYLE DETAILS",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
+  },
+  {
+    title: "SOCIAL MEDIA",
+    fields: ["facebook_profile", "instagram_profile", "linkedin_profile", "twitter_profile", "whatsapp_number"],
   },
   {
     title: "DRUG TEST DETAILS",
@@ -41,10 +45,19 @@ export const PROFILE_SECTIONS: ProfileSection[] = [
     title: "CRIMINAL RECORD DETAILS",
     fields: ["criminal_record"],
   },
+  {
+    title: "EXPECTATION DETAILS",
+    fields: ["expectation_details"],
+  },
+  {
+    title: "REFERENCE DETAILS",
+    fields: ["reference1", "reference2"],
+  },
 ]
 
 // Field display labels for better readability
 export const FIELD_LABELS: Record<string, string> = {
+  photo: "Photo",
   name: "Name",
   email_id: "Email ID",
   date_of_birth: "Date of Birth",
@@ -56,20 +69,24 @@ export const FIELD_LABELS: Record<string, string> = {
   phone_number: "Phone Number",
   alternate_phone: "Alternate Phone",
   whatsapp_number: "WhatsApp Number",
+  facebook_profile: "Facebook Profile",
+  instagram_profile: "Instagram Profile",
+  linkedin_profile: "LinkedIn Profile",
+  twitter_profile: "Twitter Profile",
   height_cm: "Height (cm)",
   weight_kg: "Weight (kg)",
   blood_group: "Blood Group",
   complexion: "Complexion",
   body_type: "Body Type",
   physical_disability: "Physical Disability",
+  diseases: "Pre-Existing Diseases (If Any)",
   country: "Country",
   state: "State",
   city: "City",
   pincode: "Pincode",
   residential_address: "Residential Address",
   native_place: "Native Place",
-  education_level: "Education Level",
-  education_details: "Education Details",
+  highest_education_qualification: "Highest Education Qualification",
   occupation: "Occupation",
   company_name: "Company Name",
   job_title: "Job Title",
@@ -79,7 +96,7 @@ export const FIELD_LABELS: Record<string, string> = {
   father_occupation: "Father's Occupation",
   mother_name: "Mother's Name",
   mother_occupation: "Mother's Occupation",
-  siblings_count: "Number of Siblings",
+  siblings_names: "Siblings Names",
   family_type: "Family Type",
   family_status: "Family Status",
   family_values: "Family Values",
@@ -92,6 +109,9 @@ export const FIELD_LABELS: Record<string, string> = {
   drug_test_status: "Drug Test Status",
   cibil_score: "CIBIL Score",
   criminal_record: "Criminal Record",
+  expectation_details: "Expectation Details",
+  reference1: "Reference 1",
+  reference2: "Reference 2",
 }
 
 // Helper function to get display label for a field
