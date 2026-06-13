@@ -9,11 +9,11 @@ export interface TrustShareSection {
 export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   {
     title: "PERSONAL DETAILS",
-    fields: ["name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
+    fields: ["photo", "name", "email_id", "date_of_birth", "gender", "marital_status", "religion", "caste", "mother_tongue", "phone_number", "alternate_phone", "whatsapp_number"],
   },
   {
     title: "PHYSICAL DETAILS",
-    fields: ["height_cm", "weight_kg", "blood_group", "complexion", "body_type", "physical_disability"],
+    fields: ["height_cm", "weight_kg", "complexion", "physical_disability", "diseases"],
   },
   {
     title: "LOCATION DETAILS",
@@ -21,15 +21,19 @@ export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   },
   {
     title: "EDUCATION & EMPLOYMENT DETAILS",
-    fields: ["education_level", "education_details", "occupation", "company_name", "job_title", "annual_income", "work_location"],
+    fields: ["highest_education_qualification", "occupation", "company_name", "job_title", "annual_income", "work_location"],
   },
   {
     title: "FAMILY MEMBER DETAILS",
-    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_count", "family_type", "family_status", "family_values"],
+    fields: ["father_name", "father_occupation", "mother_name", "mother_occupation", "siblings_names"],
   },
   {
     title: "LIFESTYLE DETAILS",
     fields: ["diet", "smoking", "drinking", "hobbies", "interests", "languages_known"],
+  },
+  {
+    title: "SOCIAL MEDIA",
+    fields: ["facebook_profile", "instagram_profile", "linkedin_profile", "twitter_profile"],
   },
   {
     title: "DRUG TEST DETAILS",
@@ -42,6 +46,14 @@ export const TRUST_SHARE_SECTIONS: TrustShareSection[] = [
   {
     title: "CRIMINAL RECORD DETAILS",
     fields: ["criminal_record"],
+  },
+  {
+    title: "EXPECTATION DETAILS",
+    fields: ["expectation_details"],
+  },
+  {
+    title: "REFERENCE DETAILS",
+    fields: ["reference1", "reference2"],
   },
 ]
 
@@ -94,6 +106,17 @@ export const TRUST_SHARE_LABELS: Record<string, string> = {
   drug_test_status: "Drug Test Status",
   cibil_score: "CIBIL Score",
   criminal_record: "Criminal Record",
+  expectation_details: "Expectation Details",
+  photo: "Photo",
+  diseases: "Pre-Existing Diseases (If Any)",
+  highest_education_qualification: "Highest Education Qualification",
+  siblings_names: "Siblings Names",
+  facebook_profile: "Facebook Profile",
+  instagram_profile: "Instagram Profile",
+  linkedin_profile: "LinkedIn Profile",
+  twitter_profile: "Twitter Profile",
+  reference1: "Reference 1",
+  reference2: "Reference 2",
 }
 
 // Helper function to get display label for a field

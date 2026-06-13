@@ -103,9 +103,12 @@ function LoginForm() {
               <div>
                 <p className="font-medium">{error || urlError}</p>
                 {error?.includes("verify your email") && (
-                  <div className="mt-2">
-                    <p className="text-xs">Check your email inbox for the confirmation link.</p>
-                  </div>
+                  <Link 
+                    href="/resend-verification" 
+                    className="block mt-2 text-red-700 underline font-medium text-xs"
+                  >
+                    Resend Confirmation Email →
+                  </Link>
                 )}
               </div>
             </div>
