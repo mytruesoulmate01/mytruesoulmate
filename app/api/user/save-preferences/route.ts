@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { TRUST_SHARE_SECTIONS } from "@/lib/trust-share-mapping"
+import { sanitizeRecipientEmail } from "@/lib/sanitization"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -65,6 +66,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Recipient email required" }, { status: 400 })
     }
 
+    // Sanitize email to prevent XSS and SQL injection
+    let sanitizedEmail: string
+    try {
+      sanitizedEmail = sanitizeRecipientEmail(recipientEmail)
+    } catch (error) {
+      return NextResponse.json({ success: false, message: "Invalid email format" }, { status: 400 })
+    }
+
     if (!fields || typeof fields !== "object") {
       return NextResponse.json({ success: false, message: "Fields selection required" }, { status: 400 })
     }
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
     // Build share data object
     const shareData: Record<string, any> = {
       user_id: user.id,
-      trustshare_email_id: recipientEmail,
+      trustshare_email_id: sanitizedEmail,
     }
 
     // Add all field selections as "true" or "false" strings (TEXT columns)
@@ -115,12 +124,20 @@ export async function DELETE(req: NextRequest) {
     const { recipientEmail } = body
 
     if (recipientEmail) {
+      // Sanitize email before using in query
+      let sanitizedEmail: string
+      try {
+        sanitizedEmail = sanitizeRecipientEmail(recipientEmail)
+      } catch (error) {
+        return NextResponse.json({ success: false, message: "Invalid email format" }, { status: 400 })
+      }
+
       // Delete specific sharing entry
       const { error } = await supabase
         .from("trustshare_details")
         .delete()
         .eq("user_id", user.id)
-        .eq("trustshare_email_id", recipientEmail)
+        .eq("trustshare_email_id", sanitizedEmail)
 
       if (error) throw error
     } else {

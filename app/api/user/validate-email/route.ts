@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sanitizeRecipientEmail } from "@/lib/sanitization"
 
 export const dynamic = "force-dynamic"
 
@@ -21,26 +22,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Email is required" }, { status: 400 })
     }
 
-    const trimmedEmail = email.trim().toLowerCase()
+    // Sanitize email to prevent XSS and SQL injection
+    let sanitizedEmail: string
+    try {
+      sanitizedEmail = sanitizeRecipientEmail(email)
+    } catch (error) {
+      return NextResponse.json({ success: false, message: "Invalid email format" }, { status: 400 })
+    }
 
     // Check if user is trying to share with themselves
-    if (trimmedEmail === user.email?.toLowerCase()) {
+    if (sanitizedEmail === user.email?.toLowerCase()) {
       return NextResponse.json({ success: false, message: "You cannot share with yourself" }, { status: 400 })
     }
 
     // Check if email exists in registered_users table (email_id is text, user_id is uuid)
-    console.log("[validate-email] Searching for email:", trimmedEmail)
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[validate-email] Searching for email:", sanitizedEmail)
+    }
     
     const { data: userData, error: userError } = await supabase
       .from("registered_users")
       .select("email_id, user_id")
-      .eq("email_id", trimmedEmail)
+      .eq("email_id", sanitizedEmail)
       .single()
 
-    if (userData) {
-      console.log("[validate-email] ✅ Email found - user is registered")
-    } else {
-      console.log("[validate-email] ❌ Email not found -", userError?.message || "user not registered")
+    if (process.env.NODE_ENV === 'development') {
+      if (userData) {
+        console.log("[validate-email] ✅ Email found - user is registered")
+      } else {
+        console.log("[validate-email] ❌ Email not found -", userError?.message || "user not registered")
+      }
     }
 
     if (userError || !userData) {
@@ -55,11 +66,13 @@ export async function POST(req: NextRequest) {
       .from("trustshare_details")
       .select("trustshare_email_id")
       .eq("user_id", user.id)
-      .eq("trustshare_email_id", trimmedEmail)
+      .eq("trustshare_email_id", sanitizedEmail)
       .single()
 
     if (existingShare) {
-      console.log("[validate-email] ⚠️ Share already exists for this recipient")
+      if (process.env.NODE_ENV === 'development') {
+        console.log("[validate-email] ⚠️ Share already exists for this recipient")
+      }
       return NextResponse.json({ 
         success: false, 
         message: "You have already shared your details with this user. Please edit your existing share from the list below."
@@ -71,8 +84,8 @@ export async function POST(req: NextRequest) {
       success: true,
       message: "User found",
       recipient: {
-        id: trimmedEmail,
-        email: trimmedEmail,
+        id: sanitizedEmail,
+        email: sanitizedEmail,
         name: "User"
       }
     })

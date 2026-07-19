@@ -4,9 +4,16 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const nextParam = searchParams.get('next') ?? '/dashboard'
   const error = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')
+
+  // Validate redirect path to prevent open redirect attacks
+  // Only allow internal paths that start with / but not // (protocol-relative URLs)
+  const isValidRedirect = nextParam.startsWith('/') && 
+                          !nextParam.startsWith('//') && 
+                          !nextParam.includes(':')
+  const next = isValidRedirect ? nextParam : '/dashboard'
 
   // Handle error from Supabase
   if (error) {
