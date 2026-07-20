@@ -18,6 +18,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    consultationCode: "",
   })
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [errorType, setErrorType] = useState<"confirmed" | "unconfirmed" | null>(null)
@@ -64,6 +65,12 @@ export default function SignupPage() {
       newErrors.confirmPassword = "Passwords do not match"
     }
 
+    if (!formData.consultationCode) {
+      newErrors.consultationCode = "Consultation code is required"
+    } else if (formData.consultationCode.trim().length < 4) {
+      newErrors.consultationCode = "Please enter a valid consultation code"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -82,6 +89,7 @@ export default function SignupPage() {
       formDataObj.append("email", formData.email)
       formDataObj.append("password", formData.password)
       formDataObj.append("confirmPassword", formData.confirmPassword)
+      formDataObj.append("consultationCode", formData.consultationCode.trim().toUpperCase())
 
       const result = await signUp(formDataObj)
 
@@ -231,6 +239,22 @@ export default function SignupPage() {
                 </Button>
               </div>
               {errors.confirmPassword && <p className="text-sm text-red-500 mt-1">{errors.confirmPassword}</p>}
+            </div>
+
+            <div>
+              <Label htmlFor="consultationCode">Consultation Code</Label>
+              <Input
+                id="consultationCode"
+                type="text"
+                placeholder="MTS-XXXXXX"
+                value={formData.consultationCode}
+                onChange={(e) => handleInputChange("consultationCode", e.target.value.toUpperCase())}
+                className={errors.consultationCode ? "border-red-500" : ""}
+                disabled={isSubmitting}
+                maxLength={12}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Shared during consultation</p>
+              {errors.consultationCode && <p className="text-sm text-red-500 mt-1">{errors.consultationCode}</p>}
             </div>
 
             {errors.submit && (
