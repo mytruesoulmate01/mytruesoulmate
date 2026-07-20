@@ -15,7 +15,7 @@ export async function GET(request: Request) {
                           !nextParam.includes(':')
   const next = isValidRedirect ? nextParam : '/dashboard'
 
-  // Handle error from Supabase
+  // Handle error from Supabase 
   if (error) {
     console.error('[Auth Callback] Error:', error, errorDescription)
     return NextResponse.redirect(
