@@ -16,6 +16,10 @@ function AuthErrorContent() {
       title: "Authentication Failed",
       description: "We couldn't complete the authentication process. This might be due to an expired or invalid link.",
     },
+    verification_failed: {
+      title: "Verification Failed",
+      description: "We couldn't verify your request. The link may have expired or already been used.",
+    },
     access_denied: {
       title: "Access Denied",
       description: "You don't have permission to access this resource.",
