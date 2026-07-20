@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache"
  * Uses the official production URL
  */
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || 'https://www.mytruesoulmate.com'
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://mytruesoulmate.com'
 }
 
 export type AuthResult = {
@@ -179,8 +179,10 @@ export async function resetPassword(formData: FormData): Promise<AuthResult> {
 
   const supabase = await createClient()
 
+  const redirectUrl = `${getBaseUrl()}/auth/callback?next=/reset-password`
+  
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${getBaseUrl()}/auth/callback?next=/reset-password`,
+    redirectTo: redirectUrl,
   })
 
   if (error) {
