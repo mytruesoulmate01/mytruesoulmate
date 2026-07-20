@@ -24,7 +24,13 @@ function LoginForm() {
 
   const verified = searchParams.get("verified") === "true"
   const redirectTo = searchParams.get("redirect") || "/dashboard"
-  const urlError = searchParams.get("error")
+  const urlErrorRaw = searchParams.get("error")
+
+  // Convert technical PKCE error to user-friendly message
+  const isPkceError = urlErrorRaw?.toLowerCase().includes("pkce") || 
+                      urlErrorRaw?.toLowerCase().includes("code verifier")
+  const urlError = isPkceError ? null : urlErrorRaw
+  const showEmailVerifiedMessage = isPkceError || verified
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -84,7 +90,7 @@ function LoginForm() {
           <p className="text-sm text-muted-foreground mt-2">Enter your credentials to access your account</p>
         </div>
 
-        {verified && (
+        {showEmailVerifiedMessage && (
           <div className="p-4 rounded-md text-sm bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
             <div className="flex items-start">
               <CheckCircle2 className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
