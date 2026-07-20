@@ -27,11 +27,16 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const confirmPassword = formData.get("confirmPassword") as string
+  const consultationCode = formData.get("consultationCode") as string
   const fullName = formData.get("fullName") as string | null
 
   // Validation
   if (!email || !password) {
     return { error: "Email and password are required" }
+  }
+
+  if (!consultationCode) {
+    return { error: "Consultation code is required" }
   }
 
   if (password !== confirmPassword) {
@@ -51,6 +56,22 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   }
 
   const supabase = await createClient()
+
+  // Validate consultation code before creating user
+  const { data: codeResult, error: codeError } = await supabase
+    .rpc('validate_and_use_access_code', {
+      input_code: consultationCode.toUpperCase(),
+      input_email: email.toLowerCase()
+    })
+
+  if (codeError) {
+    console.error("[Auth] Consultation code validation error:", codeError.message)
+    return { error: "Unable to validate consultation code. Please try again." }
+  }
+
+  if (!codeResult?.valid) {
+    return { error: codeResult?.error || "Invalid or already used consultation code" }
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email,
