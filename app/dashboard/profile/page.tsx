@@ -1,79 +1,46 @@
-"use client"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import ProfileClient from "./profile-client"
 
-import { useEffect, useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import ProtectedRoute from "@/components/protected-route"
-import { ProfileSections } from "@/components/profile/profile-sections"
+export default async function ProfilePage() {
+  const supabase = await createClient()
+  
+  // Use getClaims() - faster than getUser(), no network call
+  const { data, error } = await supabase.auth.getClaims()
+  
+  // Validate claims exist
+  if (error || !data?.claims) {
+    redirect("/login")
+  }
 
-type AnyRec = Record<string, any>
+  // Validate user ID specifically
+  const userId = data.claims.sub
+  if (!userId) {
+    redirect("/login")
+  }
 
-export default function ProfilePage() {
+  // Safely extract email (not guaranteed in all JWT setups)
+  const email = typeof data.claims.email === "string" ? data.claims.email : undefined
+
+  // Fetch profile using same client (reused)
+  const { data: profile, error: profileError } = await supabase
+    .from("user_details")
+    .select("*")
+    .eq("user_id", userId)
+    .single()
+
+  // Log only unexpected errors (not "row not found")
+  if (profileError && profileError.code !== "PGRST116") {
+    console.error("[ProfilePage] Error fetching profile:", profileError)
+  }
+
   return (
-    <ProtectedRoute>
-      <TrustProfileContent />
-    </ProtectedRoute>
+    <ProfileClient 
+      profile={
+        profile
+          ? { ...profile, ...(email ? { email_id: email } : {}) }
+          : null
+      } 
+    />
   )
-}
-
-function TrustProfileContent() {
-  const { user: jwtUser } = useAuth()
-  const [userData, setUserData] = useState<AnyRec | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-
-  const fetchProfile = async (isRefresh = false) => {
-    isRefresh ? setRefreshing(true) : setLoading(true)
-    try {
-      const res = await fetch("/api/user/trustscore", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        cache: "no-store",
-      })
-
-      const data = await res.json()
-      if (!res.ok || !data?.success) throw new Error("Failed to fetch trustscore")
-
-      setUserData(data.user)
-    } catch (err) {
-      console.error(`[ProfilePage] ❌ Failed to fetch trustscore:`, err)
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchProfile()
-  }, [])
-
-  const isTrusted = (val: any) => {
-    if (val === null || val === undefined) return false
-    if (val === "NA" || val === "Not Available") return false
-    if (Array.isArray(val) && val.length === 0) return false
-    if (typeof val === "string" && val.trim() === "") return false
-    return true
-  }
-
-  if (!jwtUser) return null
-  if (loading)
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-400">Loading trust profile...</p>
-        </div>
-      </div>
-    )
-
-  if (!userData)
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-gray-600 dark:text-gray-400">No profile data available</p>
-        </div>
-      </div>
-    )
-
-  return <ProfileSections userData={userData} isTrusted={isTrusted} />
 }
