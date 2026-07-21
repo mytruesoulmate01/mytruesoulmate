@@ -71,8 +71,16 @@ export default function Navigation() {
   }
 
   const handleLogout = async () => {
-    await signOut()
-    router.push("/")
+    try {
+      await signOut()
+      // Use replace + refresh to clear App Router client cache
+      router.replace("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Logout failed:", error)
+      // Force hard navigation to clear all cached state
+      window.location.href = "/"
+    }
   }
 
   return (
