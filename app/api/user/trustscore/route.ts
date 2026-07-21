@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-export const dynamic = "force-dynamic"
-export const revalidate = 0
-export const fetchCache = "force-no-store"
-
 export async function GET() {
   try {
     const supabase = await createClient()
     
-    // Get authenticated user directly from Supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Use getClaims() - faster than getUser(), no network call
+    const { data, error: authError } = await supabase.auth.getClaims()
     
-    if (authError || !user) {
+    if (authError || !data?.claims) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const userId = data.claims.sub
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const email = typeof data.claims.email === "string" ? data.claims.email : undefined
 
     // Fetch user details from the user_details table
     const { data: userDetails, error: detailsError } = await supabase
       .from("user_details")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .single()
 
     if (detailsError && detailsError.code !== "PGRST116") {
@@ -36,7 +39,7 @@ export async function GET() {
         success: true,
         user: {
           ...userData,
-          email_id: user.email,
+          ...(email ? { email_id: email } : {}),
         },
       },
       { status: 200 }
