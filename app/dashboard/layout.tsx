@@ -2,6 +2,9 @@ import type React from "react"
 import DashboardHeader from "./components/dashboard-header"
 import DashboardSidebar from "./components/dashboard-sidebar"
 
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+export const revalidate = 0
 
 export default function DashboardLayout({
   children,

@@ -1,6 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const noStoreHeaders = {
+  'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
@@ -19,7 +28,8 @@ export async function GET(request: Request) {
   if (error) {
     console.error('[Auth Callback] Error:', error, errorDescription)
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`
+      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`,
+      { headers: noStoreHeaders }
     )
   }
 
@@ -35,12 +45,12 @@ export async function GET(request: Request) {
       
       if (isLocalEnv) {
         // In development, redirect to localhost
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${next}`, { headers: noStoreHeaders })
       } else if (forwardedHost) {
         // In production with load balancer
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${next}`, { headers: noStoreHeaders })
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${next}`, { headers: noStoreHeaders })
       }
     }
     
@@ -49,6 +59,7 @@ export async function GET(request: Request) {
 
   // Return the user to an error page with instructions
   return NextResponse.redirect(
-    `${origin}/auth/error?error=auth_callback_error`
+    `${origin}/auth/error?error=auth_callback_error`,
+    { headers: noStoreHeaders }
   )
 }

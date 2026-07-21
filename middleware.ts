@@ -34,10 +34,12 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  // IMPORTANT: Do not run code between createServerClient and supabase.auth.getUser()
+  // IMPORTANT: Do not run code between createServerClient and supabase.auth.getClaims()
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { claims },
+  } = await supabase.auth.getClaims()
+
+  const isAuthed = !!claims
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = ['/dashboard']
@@ -45,7 +47,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
 
-  if (isProtectedPath && !user) {
+  if (isProtectedPath && !isAuthed) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', request.nextUrl.pathname)
@@ -58,10 +60,30 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === path
   )
 
-  if (isAuthPath && user) {
+  if (isAuthPath && isAuthed) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Cache-Control headers for protected and auth routes (prevent back-button access after logout)
+  const noStorePaths = [
+    '/dashboard',
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/auth/callback',
+    '/api/auth',
+  ]
+  const needsNoStore = noStorePaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  if (needsNoStore) {
+    supabaseResponse.headers.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
+    supabaseResponse.headers.set('Pragma', 'no-cache')
+    supabaseResponse.headers.set('Expires', '0')
   }
 
   // Security headers
