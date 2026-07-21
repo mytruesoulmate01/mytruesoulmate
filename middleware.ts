@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          const isProd = process.env.NODE_ENV === 'production'
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           )
@@ -22,7 +23,11 @@ export async function middleware(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              secure: isProd,
+              sameSite: 'lax',
+            }),
           )
         },
       },
@@ -63,18 +68,16 @@ export async function middleware(request: NextRequest) {
   supabaseResponse.headers.set("X-Frame-Options", "DENY")
   supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")
   supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-  supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block")
   supabaseResponse.headers.set("X-DNS-Prefetch-Control", "off")
   supabaseResponse.headers.set("X-Download-Options", "noopen")
   supabaseResponse.headers.set("X-Permitted-Cross-Domain-Policies", "none")
-  supabaseResponse.headers.set("Cross-Origin-Embedder-Policy", "require-corp")
   supabaseResponse.headers.set("Cross-Origin-Opener-Policy", "same-origin")
   supabaseResponse.headers.set("Cross-Origin-Resource-Policy", "same-origin")
 
   // Content Security Policy
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
+    `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''} https://vercel.live`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
@@ -90,7 +93,7 @@ export async function middleware(request: NextRequest) {
 
   // HSTS for production
   if (process.env.NODE_ENV === "production") {
-    supabaseResponse.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+    supabaseResponse.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
   }
 
   // Permissions Policy
