@@ -1,128 +1,89 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Paths that require authentication check
+const PROTECTED_PATHS = ['/dashboard']
+const AUTH_PAGES = ['/login', '/signup']
+
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const { pathname, search } = request.nextUrl
+
+  // Determine if this path needs auth checking
+  const isProtectedPath = PROTECTED_PATHS.some(path => pathname.startsWith(path))
+  const isAuthPage = AUTH_PAGES.some(path => pathname === path)
+  const needsAuthCheck = isProtectedPath || isAuthPage
+
+  // PUBLIC PAGES: Skip auth entirely - return immediately for best performance
+  if (!needsAuthCheck) {
+    return NextResponse.next()
+  }
+
+  // AUTH-REQUIRED PAGES: Create Supabase client and validate session
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          const isProd = process.env.NODE_ENV === 'production'
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          )
-          supabaseResponse = NextResponse.next({
-            request,
+        setAll(cookiesToSet, headers) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options)
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, {
-              ...options,
-              secure: isProd,
-              sameSite: 'lax',
-            }),
-          )
+          Object.entries(headers ?? {}).forEach(([key, value]) => {
+            supabaseResponse.headers.set(key, value as string)
+          })
         },
       },
     },
   )
 
-  // IMPORTANT: Do not run code between createServerClient and supabase.auth.getUser()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Validate JWT (fast local verification when asymmetric keys are used)
+  const { data } = await supabase.auth.getClaims()
+  const isAuthed = !!data?.claims
+
+  // Helper: Create redirect response and preserve Supabase cookies
+  const createRedirectWithCookies = (redirectUrl: URL) => {
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    return redirectResponse
+  }
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ['/dashboard']
-  const isProtectedPath = protectedPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isProtectedPath && !user) {
+  if (isProtectedPath && !isAuthed) {
     const url = request.nextUrl.clone()
+    url.search = '' // Clear existing query params
     url.pathname = '/login'
-    url.searchParams.set('redirect', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
+    url.searchParams.set('redirect', pathname + search)
+    return createRedirectWithCookies(url)
   }
 
   // Auth pages - redirect to dashboard if already authenticated
-  const authPaths = ['/login', '/signup']
-  const isAuthPath = authPaths.some(path => 
-    request.nextUrl.pathname === path
-  )
-
-  if (isAuthPath && user) {
+  if (isAuthPage && isAuthed) {
     const url = request.nextUrl.clone()
+    url.search = '' // Clear existing query params
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return createRedirectWithCookies(url)
   }
 
-  // Security headers
-  supabaseResponse.headers.set("X-Frame-Options", "DENY")
-  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff")
-  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-  supabaseResponse.headers.set("X-DNS-Prefetch-Control", "off")
-  supabaseResponse.headers.set("X-Download-Options", "noopen")
-  supabaseResponse.headers.set("X-Permitted-Cross-Domain-Policies", "none")
-  supabaseResponse.headers.set("Cross-Origin-Opener-Policy", "same-origin")
-  supabaseResponse.headers.set("Cross-Origin-Resource-Policy", "same-origin")
-
-  // Content Security Policy
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === 'development' ? "'unsafe-eval'" : ''} https://vercel.live`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: https: blob:",
-    "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.supabase.co",
-    "media-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
-  ].join("; ")
-  supabaseResponse.headers.set("Content-Security-Policy", csp)
-
-  // HSTS for production
-  if (process.env.NODE_ENV === "production") {
-    supabaseResponse.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
-  }
-
-  // Permissions Policy
-  const permissionsPolicy = [
-    "camera=()",
-    "microphone=()",
-    "geolocation=()",
-    "interest-cohort=()",
-    "payment=()",
-    "usb=()",
-    "bluetooth=()",
-    "accelerometer=()",
-    "gyroscope=()",
-    "magnetometer=()",
-  ].join(", ")
-  supabaseResponse.headers.set("Permissions-Policy", permissionsPolicy)
+  // Cache-Control headers for auth-related routes (prevent back-button caching)
+  supabaseResponse.headers.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
+  supabaseResponse.headers.set('Pragma', 'no-cache')
+  supabaseResponse.headers.set('Expires', '0')
 
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/dashboard',
+    '/dashboard/:path*',
+    '/login',
+    '/signup',
   ],
 }

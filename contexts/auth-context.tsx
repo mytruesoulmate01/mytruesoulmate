@@ -23,6 +23,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// BroadcastChannel for cross-tab logout synchronization
+const LOGOUT_CHANNEL_NAME = 'auth-logout'
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null)
@@ -66,6 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut()
       setUser(null)
       setSupabaseUser(null)
+      
+      // Broadcast logout to other tabs
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        const logoutChannel = new BroadcastChannel(LOGOUT_CHANNEL_NAME)
+        logoutChannel.postMessage('logout')
+        logoutChannel.close()
+      }
     } catch (error) {
       console.error("[Auth] Sign out error:", error)
     }
@@ -109,8 +119,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
+    // Listen for logout from other tabs via BroadcastChannel
+    let logoutChannel: BroadcastChannel | null = null
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      logoutChannel = new BroadcastChannel(LOGOUT_CHANNEL_NAME)
+      logoutChannel.onmessage = (event) => {
+        if (event.data === 'logout') {
+          console.log("[Auth] Received logout broadcast from another tab")
+          setUser(null)
+          setSupabaseUser(null)
+          // Force hard navigation to clear all cached state
+          window.location.href = '/'
+        }
+      }
+    }
+
     return () => {
       subscription.unsubscribe()
+      if (logoutChannel) {
+        logoutChannel.close()
+      }
     }
   }, [])
 

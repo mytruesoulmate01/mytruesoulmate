@@ -16,6 +16,16 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.in',
+      },
+    ],
   },
   async headers() {
     return [
@@ -60,7 +70,20 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: `default-src 'self'; script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vercel.live wss://ws-us3.pusher.com https://*.supabase.co; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;`,
+            value: [
+              "default-src 'self'",
+              `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://vercel.live https://va.vercel-scripts.com`,
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' https://fonts.gstatic.com",
+              "connect-src 'self' https://vercel.live https://vitals.vercel-insights.com wss://ws-us3.pusher.com https://*.supabase.co wss://*.supabase.co",
+              "media-src 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              "upgrade-insecure-requests",
+            ].join('; '),
           },
         ],
       },

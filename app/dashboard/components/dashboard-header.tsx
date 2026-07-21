@@ -14,11 +14,13 @@ export default function DashboardHeader() {
   const handleLogout = async () => {
     try {
       await signOut()
-      router.push("/")
+      // Use replace + refresh to clear App Router client cache
+      router.replace("/")
+      router.refresh()
     } catch (error) {
       console.error("Logout failed:", error)
-      // Force redirect even if logout fails
-      router.push("/")
+      // Force hard navigation to clear all cached state
+      window.location.href = "/"
     }
   }
 
