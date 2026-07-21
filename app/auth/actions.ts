@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
+import { redirect, RedirectType } from "next/navigation"
 import { revalidatePath } from "next/cache"
 
 /**
@@ -123,6 +123,7 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
 export async function signIn(formData: FormData): Promise<AuthResult> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
+  const redirectToRaw = formData.get("redirectTo") as string | null
 
   if (!email || !password) {
     return { error: "Email and password are required" }
@@ -150,8 +151,12 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
   }
 
   if (data?.user) {
-    revalidatePath("/", "layout")
-    return { success: true }
+    const redirectTo = redirectToRaw?.startsWith("/") && !redirectToRaw.startsWith("//")
+      ? redirectToRaw
+      : "/dashboard/profile"
+    const destination = redirectTo === "/dashboard" ? "/dashboard/profile" : redirectTo
+
+    redirect(destination, RedirectType.replace)
   }
 
   return { error: "Login failed. Please try again." }

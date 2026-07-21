@@ -63,11 +63,11 @@ export async function middleware(request: NextRequest) {
     return createRedirectWithCookies(url)
   }
 
-  // Auth pages - redirect to dashboard if already authenticated
+  // Auth pages - redirect to profile if already authenticated
   if (isAuthPage && isAuthed) {
     const url = request.nextUrl.clone()
     url.search = '' // Clear existing query params
-    url.pathname = '/dashboard'
+    url.pathname = '/dashboard/profile'
     return createRedirectWithCookies(url)
   }
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,11 +19,10 @@ function LoginForm() {
     email: "",
     password: "",
   })
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   const verified = searchParams.get("verified") === "true"
-  const redirectTo = searchParams.get("redirect") || "/dashboard"
+  const redirectTo = searchParams.get("redirect") || "/dashboard/profile"
   const urlErrorRaw = searchParams.get("error")
 
   // Convert technical PKCE error to user-friendly message
@@ -52,14 +51,12 @@ function LoginForm() {
       const formDataObj = new FormData()
       formDataObj.append("email", formData.email)
       formDataObj.append("password", formData.password)
+      formDataObj.append("redirectTo", redirectTo)
 
       const result = await signIn(formDataObj)
 
-      if (result.success) {
-        router.push(redirectTo)
-        router.refresh()
-      } else {
-        setError(result.error || "Invalid email or password")
+      if (result?.error) {
+        setError(result.error)
       }
     } catch (error) {
       console.error("Login error:", error)
