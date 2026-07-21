@@ -2,44 +2,37 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          const isProd = process.env.NODE_ENV === 'production'
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          )
-          supabaseResponse = NextResponse.next({
-            request,
+        setAll(cookiesToSet, headers) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options)
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, {
-              ...options,
-              secure: isProd,
-              sameSite: 'lax',
-            }),
-          )
+          Object.entries(headers ?? {}).forEach(([key, value]) => {
+            supabaseResponse.headers.set(key, value as string)
+          })
         },
       },
     },
   )
 
-  // IMPORTANT: Do not run code between createServerClient and supabase.auth.getClaims()
-  const {
-    data: { claims },
-  } = await supabase.auth.getClaims()
+  // Debug logging - check what cookies are present
+  const cookieNames = request.cookies.getAll().map(c => c.name)
+  console.log('[Middleware]', request.nextUrl.pathname, '| Cookies:', cookieNames.join(', ') || 'none')
 
-  const isAuthed = !!claims
+  // Validate JWT locally (fast, no network call)
+  const { data } = await supabase.auth.getClaims()
+  const isAuthed = !!data?.claims
+
+  console.log('[Middleware]', request.nextUrl.pathname, '| Authenticated:', isAuthed)
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = ['/dashboard']
@@ -48,6 +41,7 @@ export async function middleware(request: NextRequest) {
   )
 
   if (isProtectedPath && !isAuthed) {
+    console.log('[Middleware] Redirecting unauthenticated user to /login')
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', request.nextUrl.pathname)
@@ -61,24 +55,15 @@ export async function middleware(request: NextRequest) {
   )
 
   if (isAuthPath && isAuthed) {
+    console.log('[Middleware] Redirecting authenticated user to /dashboard')
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
-  // Cache-Control headers for protected and auth routes (prevent back-button access after logout)
-  const noStorePaths = [
-    '/dashboard',
-    '/login',
-    '/signup',
-    '/forgot-password',
-    '/reset-password',
-    '/auth/callback',
-    '/api/auth',
-  ]
-  const needsNoStore = noStorePaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
-  )
+  // Cache-Control headers for protected and auth routes
+  const noStorePaths = ['/dashboard', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback', '/api/auth']
+  const needsNoStore = noStorePaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (needsNoStore) {
     supabaseResponse.headers.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
@@ -120,16 +105,8 @@ export async function middleware(request: NextRequest) {
 
   // Permissions Policy
   const permissionsPolicy = [
-    "camera=()",
-    "microphone=()",
-    "geolocation=()",
-    "interest-cohort=()",
-    "payment=()",
-    "usb=()",
-    "bluetooth=()",
-    "accelerometer=()",
-    "gyroscope=()",
-    "magnetometer=()",
+    "camera=()", "microphone=()", "geolocation=()", "interest-cohort=()",
+    "payment=()", "usb=()", "bluetooth=()", "accelerometer=()", "gyroscope=()", "magnetometer=()",
   ].join(", ")
   supabaseResponse.headers.set("Permissions-Policy", permissionsPolicy)
 
@@ -137,14 +114,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
