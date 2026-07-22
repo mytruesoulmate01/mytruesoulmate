@@ -4,6 +4,7 @@ import FeaturesSection from "@/components/features-section"
 import ProcessSection from "@/components/process-section"
 import CallToActionSection from "@/components/call-to-action-section"
 import { createClient } from "@/lib/supabase/server"
+import { sanitizeErrorForUrl } from "@/lib/auth-errors"
 
 export default async function HomePage({
   searchParams,
@@ -21,14 +22,24 @@ export default async function HomePage({
       // Successfully authenticated, redirect to dashboard
       redirect('/dashboard')
     } else {
-      // Auth failed, redirect to login with error
-      redirect(`/login?error=${encodeURIComponent(error.message)}`)
+      // Log full error server-side for debugging
+      console.error('[Home] Auth code exchange error:', { code: error.code, message: error.message })
+      // Sanitize for client - never expose raw error
+      const safeErrorCode = sanitizeErrorForUrl(error)
+      redirect(`/login?error=${safeErrorCode}`)
     }
   }
   
-  // Handle auth errors
+  // Handle auth errors from Supabase redirect
   if (params.error) {
-    redirect(`/login?error=${encodeURIComponent(params.error_description || params.error)}`)
+    // Log full error server-side for debugging
+    console.error('[Home] Auth error:', { error: params.error, description: params.error_description })
+    // Sanitize for client - prefer error code, fallback to description
+    let safeErrorCode = sanitizeErrorForUrl(params.error)
+    if (safeErrorCode === 'unknown' && params.error_description) {
+      safeErrorCode = sanitizeErrorForUrl(params.error_description)
+    }
+    redirect(`/login?error=${safeErrorCode}`)
   }
 
   return (

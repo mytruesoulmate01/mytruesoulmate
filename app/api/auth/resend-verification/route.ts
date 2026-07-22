@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { sanitizeErrorForAction } from "@/lib/auth-errors"
 
 export async function POST(request: Request) {
   try {
@@ -46,8 +47,9 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("[Auth] Resend verification error:", error.message)
+      // Sanitize error - never expose raw message
       return NextResponse.json(
-        { message: error.message },
+        { message: sanitizeErrorForAction(error) },
         { status: 400 }
       )
     }

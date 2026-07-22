@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react"
 import Image from "next/image"
 import { signIn } from "@/app/auth/actions"
+import { getErrorMessage, isSessionError } from "@/lib/auth-errors"
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -24,13 +25,14 @@ function LoginForm() {
 
   const verified = searchParams.get("verified") === "true"
   const redirectTo = searchParams.get("redirect") || "/dashboard"
-  const urlErrorRaw = searchParams.get("error")
+  const urlErrorCode = searchParams.get("error")
 
-  // Convert technical PKCE error to user-friendly message
-  const isPkceError = urlErrorRaw?.toLowerCase().includes("pkce") || 
-                      urlErrorRaw?.toLowerCase().includes("code verifier")
-  const urlError = isPkceError ? null : urlErrorRaw
-  const showEmailVerifiedMessage = isPkceError || verified
+  // Get user-friendly error message from safe error code (never render raw code)
+  const urlError = getErrorMessage(urlErrorCode)
+  
+  // Only show "Email verified" if verified=true AND no session error
+  // Session errors (like session_expired) should NOT show success message
+  const showEmailVerifiedMessage = verified && !isSessionError(urlErrorCode)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
