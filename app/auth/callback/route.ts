@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { sanitizeErrorForUrl } from '@/lib/auth-errors'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -11,7 +12,8 @@ const noStoreHeaders = {
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const requestUrl = new URL(request.url)
+  const { searchParams, origin } = requestUrl
   const code = searchParams.get('code')
   const nextParam = searchParams.get('next') ?? '/dashboard'
   const error = searchParams.get('error')
@@ -26,11 +28,18 @@ export async function GET(request: Request) {
 
   // Handle error from Supabase 
   if (error) {
-    console.error('[Auth Callback] Error:', error, errorDescription)
-    return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(errorDescription || error)}`,
-      { headers: noStoreHeaders }
-    )
+    // Log full error server-side for debugging
+    console.error('[Auth Callback] Error:', { error, errorDescription, url: request.url })
+    
+    // Sanitize for client - prefer error code, fallback to description
+    let safeErrorCode = sanitizeErrorForUrl(error)
+    if (safeErrorCode === 'unknown' && errorDescription) {
+      safeErrorCode = sanitizeErrorForUrl(errorDescription)
+    }
+    
+    const redirectUrl = new URL('/login', origin)
+    redirectUrl.searchParams.set('error', safeErrorCode)
+    return NextResponse.redirect(redirectUrl, { headers: noStoreHeaders })
   }
 
   if (code) {
@@ -54,10 +63,21 @@ export async function GET(request: Request) {
       }
     }
     
-    console.error('[Auth Callback] Code exchange error:', exchangeError.message)
+    // Log full error server-side for debugging
+    console.error('[Auth Callback] Code exchange error:', {
+      code: exchangeError.code,
+      message: exchangeError.message,
+      name: exchangeError.name,
+    })
+    
+    // Sanitize for client
+    const safeErrorCode = sanitizeErrorForUrl(exchangeError)
+    const redirectUrl = new URL('/login', origin)
+    redirectUrl.searchParams.set('error', safeErrorCode)
+    return NextResponse.redirect(redirectUrl, { headers: noStoreHeaders })
   }
 
-  // Return the user to an error page with instructions
+  // No code provided - redirect to error page
   return NextResponse.redirect(
     `${origin}/auth/error?error=auth_callback_error`,
     { headers: noStoreHeaders }
