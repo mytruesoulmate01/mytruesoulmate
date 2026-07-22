@@ -33,8 +33,55 @@ export default function Navigation() {
     }
   }, [])
 
+  // Hide navigation completely on dashboard (has its own header)
   if (pathname?.startsWith("/dashboard")) {
     return null
+  }
+
+  // Auth flow pages - show minimal header (logo + theme toggle only)
+  const AUTH_FLOW_PATHS = [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
+    '/resend-verification',
+    '/auth/error',
+    '/auth/confirm'
+  ]
+  const isAuthFlowPage = AUTH_FLOW_PATHS.some(page => pathname === page)
+
+  // Minimal header for auth flow pages (no account UI to avoid confusion)
+  if (isAuthFlowPage) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+            <Image
+              src="/images/truesoulmate-full-logo.png"
+              alt="MyTrueSoulMate"
+              width={420}
+              height={72}
+              priority
+              className="h-16 w-auto"
+            />
+          </Link>
+
+          {/* Theme toggle only - no account UI */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            className="h-9 w-9"
+            aria-label="Toggle theme"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+        </div>
+      </header>
+    )
   }
 
   // Navigation items
