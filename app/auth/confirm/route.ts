@@ -39,6 +39,9 @@ export async function GET(request: NextRequest) {
     })
     
     if (!error) {
+      // Wait for database trigger to complete (creates user_details row)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Successfully verified - redirect to intended page
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
