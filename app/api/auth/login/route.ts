@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { validateEmail, sanitizeEmail } from "@/lib/validation"
+import { sanitizeErrorForAction } from "@/lib/auth-errors"
 
 export interface LoginRequest {
   email: string
@@ -53,8 +54,9 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Sanitize unknown errors - never expose raw message
       return NextResponse.json(
-        { error: "LOGIN_FAILED", message: error.message },
+        { error: "LOGIN_FAILED", message: sanitizeErrorForAction(error) },
         { status: 401 }
       )
     }

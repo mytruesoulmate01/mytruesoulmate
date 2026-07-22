@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
+import { sanitizeErrorForAction } from "@/lib/auth-errors"
 
 /**
  * Get the base URL for redirects
@@ -103,7 +104,8 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       }
     }
     
-    return { error: error.message }
+    // Sanitize unknown errors - never expose raw message
+    return { error: sanitizeErrorForAction(error) }
   }
 
   if (data?.user) {
@@ -146,7 +148,8 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
       return { error: "Please verify your email before logging in. Check your inbox for the confirmation link." }
     }
     
-    return { error: error.message }
+    // Sanitize unknown errors - never expose raw message
+    return { error: sanitizeErrorForAction(error) }
   }
 
   if (data?.user) {
@@ -187,7 +190,8 @@ export async function resetPassword(formData: FormData): Promise<AuthResult> {
 
   if (error) {
     console.error("[Auth] Password reset error:", error.message)
-    return { error: error.message }
+    // Sanitize error - never expose raw message
+    return { error: sanitizeErrorForAction(error) }
   }
 
   return {
@@ -231,7 +235,8 @@ export async function updatePassword(formData: FormData): Promise<AuthResult> {
 
   if (error) {
     console.error("[Auth] Password update error:", error.message)
-    return { error: error.message }
+    // Sanitize error - never expose raw message
+    return { error: sanitizeErrorForAction(error) }
   }
 
   return {

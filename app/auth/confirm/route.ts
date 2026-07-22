@@ -1,6 +1,13 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeErrorForUrl } from '@/lib/auth-errors'
+
+const noStoreHeaders = {
+  'Cache-Control': 'private, no-store, max-age=0, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+}
 
 /**
  * Server-side token exchange endpoint for PKCE email flows
@@ -11,7 +18,8 @@ import { createClient } from '@/lib/supabase/server'
  * then redirects to the intended page.
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const requestUrl = new URL(request.url)
+  const { searchParams, origin } = requestUrl
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/'
@@ -36,17 +44,32 @@ export async function GET(request: NextRequest) {
       const isLocalEnv = process.env.NODE_ENV === 'development'
       
       if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${redirectPath}`)
+        return NextResponse.redirect(`${origin}${redirectPath}`, { headers: noStoreHeaders })
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`)
+        return NextResponse.redirect(`https://${forwardedHost}${redirectPath}`, { headers: noStoreHeaders })
       } else {
-        return NextResponse.redirect(`${origin}${redirectPath}`)
+        return NextResponse.redirect(`${origin}${redirectPath}`, { headers: noStoreHeaders })
       }
     }
     
-    console.error('[Auth Confirm] Verification error:', error.message)
+    // Log full error server-side for debugging
+    console.error('[Auth Confirm] Verification error:', {
+      code: error.code,
+      message: error.message,
+      name: error.name,
+      type,
+    })
+    
+    // Sanitize for client
+    const safeErrorCode = sanitizeErrorForUrl(error)
+    const redirectUrl = new URL('/login', origin)
+    redirectUrl.searchParams.set('error', safeErrorCode)
+    return NextResponse.redirect(redirectUrl, { headers: noStoreHeaders })
   }
 
-  // Verification failed - redirect to error page
-  return NextResponse.redirect(`${origin}/auth/error?error=verification_failed`)
+  // Missing token or type - redirect to error page
+  return NextResponse.redirect(
+    `${origin}/auth/error?error=verification_failed`,
+    { headers: noStoreHeaders }
+  )
 }
