@@ -48,6 +48,9 @@ export async function GET(request: Request) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!exchangeError) {
+      // Wait for database trigger to complete (creates user_details row on signup)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Successfully exchanged code for session
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
