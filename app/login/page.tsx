@@ -11,6 +11,7 @@ import { Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react"
 import Image from "next/image"
 import { signIn } from "@/app/auth/actions"
 import { getErrorMessage, isSessionError } from "@/lib/auth-errors"
+import { useAuth } from "@/contexts/auth-context"
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -22,6 +23,7 @@ function LoginForm() {
   })
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { refreshUser } = useAuth()
 
   const verified = searchParams.get("verified") === "true"
   const redirectTo = searchParams.get("redirect") || "/dashboard"
@@ -58,8 +60,16 @@ function LoginForm() {
       const result = await signIn(formDataObj)
 
       if (result.success) {
-        router.push(redirectTo)
-        router.refresh()
+        // Sync client auth state before navigation (Vercel recommendation)
+        await refreshUser()
+        
+        // Validate redirect path to prevent open redirect attacks
+        const isValidRedirect = redirectTo.startsWith('/') && 
+                                !redirectTo.startsWith('//') && 
+                                !redirectTo.includes(':')
+        const safeRedirect = isValidRedirect ? redirectTo : '/dashboard'
+        
+        router.replace(safeRedirect)
       } else {
         setError(result.error || "Invalid email or password")
       }
