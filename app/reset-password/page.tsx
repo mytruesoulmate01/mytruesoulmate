@@ -10,9 +10,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { Eye, EyeOff, Lock, CheckCircle, ArrowLeft } from "lucide-react"
 import { updatePassword } from "@/app/auth/actions"
+import { useAuth } from "@/contexts/auth-context"
 
 function ResetPasswordForm() {
   const router = useRouter()
+  const { signOut } = useAuth()
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
@@ -64,6 +66,15 @@ function ResetPasswordForm() {
       const result = await updatePassword(formDataObj)
 
       if (result.success) {
+        // Sign out to clear the recovery session
+        // This ensures clean state when user goes to login
+        try {
+          await signOut()
+        } catch (signOutError) {
+          console.error("Sign out after reset failed:", signOutError)
+          // Continue to success state even if sign out fails
+        }
+        
         setIsSuccess(true)
       } else {
         setError(result.error || "Failed to update password. Please try again.")
