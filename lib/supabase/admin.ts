@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { supabaseConfig } from './config'
 
 /**
  * Supabase Admin Client - SERVER-SIDE ONLY
@@ -13,17 +14,25 @@ import { createClient } from '@supabase/supabase-js'
  * - Operations on behalf of users (e.g., account deletion)
  */
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL')
+if (!supabaseConfig.url) {
+  throw new Error(
+    supabaseConfig.isTestMode
+      ? 'Missing env.TEST_NEXT_PUBLIC_SUPABASE_URL'
+      : 'Missing env.NEXT_PUBLIC_SUPABASE_URL'
+  )
 }
 
-if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('Missing env.SUPABASE_SERVICE_ROLE_KEY')
+if (!supabaseConfig.serviceRoleKey) {
+  throw new Error(
+    supabaseConfig.isTestMode
+      ? 'Missing env.TEST_SUPABASE_SERVICE_ROLE_KEY'
+      : 'Missing env.SUPABASE_SERVICE_ROLE_KEY'
+  )
 }
 
 export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseConfig.url,
+  supabaseConfig.serviceRoleKey,
   {
     auth: {
       autoRefreshToken: false,
