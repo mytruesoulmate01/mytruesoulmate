@@ -204,7 +204,7 @@ export default function FAQSection() {
                     <MessageCircle className="h-8 w-8 text-red-600" />
                   </div>
                 </div>
-                <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
+                <h2 className="text-3xl font-bold mb-4">Talk To Our Team</h2>
                 <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
                   Our support team is here to help you with any questions or concerns. We typically respond within 24
                   hours.
