@@ -8,7 +8,7 @@ export default function HeroSection() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-white">Find Your TrueSoulMate</h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Get verified credentials and a trust score to create trust connection
+            Find the right marriage bureau and verify shortlisted proposals—all in one place
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
