@@ -14,12 +14,12 @@ export default function CallToActionSection() {
             verification when required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
+            <Link href="/#how-it-works">
               <Button size="lg" variant="secondary" className="bg-white text-red-700 hover:bg-gray-100">
-                Share Your Requirements
+                Learn More
               </Button>
             </Link>
-            <Link href="/why-mytruesoulmate">
+            <Link href="/faq#talk-to-our-team">
               <Button size="lg" variant="secondary" className="bg-white text-red-700 hover:bg-gray-100">
                 Talk to Our Team
               </Button>

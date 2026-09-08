@@ -194,7 +194,7 @@ export default function FAQSection() {
       </section>
 
       {/* Contact Support Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <section id="talk-to-our-team" className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-lg">
