@@ -1,4 +1,4 @@
-import { ClipboardList, Building2, FileText, ShieldCheck } from "lucide-react"
+import { ClipboardList, Building2, FileText, ShieldCheck, HeartHandshake } from "lucide-react"
 
 export default function ProcessSection() {
   const steps = [
@@ -27,6 +27,12 @@ export default function ProcessSection() {
       title: "Verify Shortlisted Proposals",
       description:
         "If required, we connect you with professional pre-marriage investigation services before you make the final decision.",
+    },
+    {
+      number: 5,
+      icon: <HeartHandshake className="h-8 w-8 text-red-600" />,
+      title: "Individual and Couple Counseling",
+      description: "Get access to counseling support that helps you take a more informed decision.",
     },
   ]
 
