@@ -65,6 +65,12 @@ export default function ProblemSolutionCards() {
       description:
         "From finding suitable marriage bureaus to verifying a shortlisted proposal, access both services through one platform.",
     },
+    {
+      id: 13,
+      title: "Personal & Couple Counseling",
+      description:
+        "Connect with professional counselors for personal or couple counseling sessions to help you take a more informed marriage decision.",
+    },
   ]
 
   return (
