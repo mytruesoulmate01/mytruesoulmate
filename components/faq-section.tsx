@@ -5,132 +5,102 @@ import { Mail, MessageCircle, HelpCircle } from "lucide-react"
 export default function FAQSection() {
   const faqData = [
     {
-      category: "Account & Registration",
+      category: "About MyTrueSoulMate",
       questions: [
         {
-          question: "How do I create an account on MyTrueSoulMate?",
+          question: "What is MyTrueSoulMate?",
           answer:
-            "Creating an account is simple. Click on 'Sign up' in the top navigation, provide your email address, create a secure password  and after successfull registration you will get email  with all details .",
+            "MyTrueSoulMate helps you find the right marriage bureau for your requirements and connects you with professional verification services to check important details of a shortlisted proposal — all through one platform.",
         },
         {
-          question: "What information do I need to provide during registration?",
+          question: "How is MyTrueSoulMate different from a regular matrimony site?",
           answer:
-            "During registration, you'll need a valid email address . For verification, you may need to provide documents like ID proof, educational certificates, employment verification, and other relevant credentials depending on your verification level .",
+            "We are not a matrimony site. Instead of listing profiles, we understand your requirements, match you with marriage bureaus that specialize in your community, religion, location or profession, and help you register with them. We also arrange pre-marriage verification when needed.",
         },
         {
-          question: "Can I update my profile information after registration?",
+          question: "Who can use MyTrueSoulMate?",
           answer:
-            "Yes, you can update most of your profile information anytime by sending email to our support team. We will verify information as per our  verification process again to maintain trust score accuracy.",
+            "Anyone looking for the right marriage bureau to assist with their partner search, or anyone who wants a shortlisted proposal verified before making a final decision, can use MyTrueSoulMate.",
         },
       ],
     },
     {
-      category: "Verification Process",
+      category: "Sharing Your Requirements",
       questions: [
         {
-          question: "What documents are required for verification?",
+          question: "How do I share my requirements?",
           answer:
-            "After successfull sign up , we will send you email ccontain all required background verification document  ,  documents depends on  verification level but typically include government-issued ID, educational certificates, employment verification letters, address proof, and character references. ",
+            "Click 'Share Your Requirements' or 'Get Started', sign up with your email, and fill in your preferences such as community, religion, location, profession, family background and partner expectations.",
         },
         {
-          question: "How long does the verification process take?",
+          question: "Do I need to repeat my requirements to every marriage bureau?",
           answer:
-            "Standard verification typically takes 3-5 business days but sometime it will take 7-10 days due to additional background checks. You'll receive email updates throughout the process and can track progress in your dashboard.",
+            "No. You share your requirements with us once, and we use them to identify and connect you with all relevant marriage bureaus, saving you the effort of explaining them separately each time.",
         },
         {
-          question: "What happens if my verification is rejected?",
+          question: "Can I update my requirements later?",
           answer:
-            "If verification is rejected, you'll receive detailed feedback on the reasons. You can resubmit with corrected documents or additional information. Our support team is available to help you understand requirements and successfully complete verification.",
+            "Yes, you can update your requirements anytime by contacting our support team. We'll use the updated information to refine the marriage bureau matches we recommend for you.",
         },
       ],
     },
     {
-      category: "Trust Profile",
+      category: "Marriage Bureau Matching",
       questions: [
         {
-          question: "What is Trust Profile?",
+          question: "How do you find suitable marriage bureaus for me?",
           answer:
-            "Trust Profile provide details based on these categories personal , social media , education and employment , marriage details , criminal record , expectation .",
+            "Our team reviews your requirements and searches for marriage bureaus that specialize in profiles matching your community, religion, location, profession or family background, then shares the most relevant options with you.",
         },
         {
-          question: "Which document required for Trust Profile ?",
+          question: "Will I be registered with multiple marriage bureaus?",
           answer:
-            "After sign-up , our team will send you list of document required for verification , evey document will be verified as per our verification process , all details will be shared with you via email .",
+            "We can connect you with multiple marriage bureaus so you have more search opportunities, but you decide which ones you'd like to proceed and register with.",
         },
         {
-          question: "What will happen after my Trust Profile is verified ?",
+          question: "Can I compare marriage bureaus before choosing?",
           answer:
-            "Once your Trust Profile is verified, you'll receive a Trust Score that reflects your credibility based on the verifications completed. You can then share your Trust Profile and score with potential partners to build trust and confidence in your interactions by creating Trust Share .",
-        },
-        {
-          question: "Why some details marked as  Not Available  although I already provided verification document ?",
-          answer:
-            "If any details marked as Not Available  then it means  verification process is still pending for that particular detail , once verification process is completed that detail will be updated automatically in your Trust Profile  and in case we not able to verify that detail then we will notify you with exact reason .",
+            "Yes, we share details about each recommended bureau's services, specialization and pricing so you can compare and make an informed choice before registering.",
         },
       ],
     },
     {
-      category: "Trust Score",
+      category: "Registration Assistance",
       questions: [
         {
-          question: "What is Trust Score",
+          question: "How does MyTrueSoulMate help with registration?",
           answer:
-            "Trust Score is a numerical representation of your trustworthiness based on the verifications you complete on MyTrueSoulMate. It helps potential partners quickly assess your credibility and reliability.",
+            "Once you select a marriage bureau, our team assists you in completing the registration process with them, so you don't have to navigate it on your own.",
         },
         {
-          question: "How is my trust score calculated?",
-          answer: "Every  verified Trust-Details  5 points will be added in your trust score .",
+          question: "Do I pay MyTrueSoulMate or the marriage bureau directly?",
+          answer:
+            "Marriage bureau registration fees are paid directly to the respective bureau as per their terms. Our team will guide you on the process and any charges applicable for our matching and assistance services.",
         },
         {
-          question: "Can I improve my trust score?",
+          question: "What if I'm not satisfied with a recommended marriage bureau?",
           answer:
-            "Yes! You can improve your trust score by completing additional verifications, adding more credentials, obtaining character references, maintaining consistent information, and choosing premium verification options for enhanced credibility.",
-        },
-        {
-          question: "How often is my trust score updated?",
-          answer:
-            "Trust scores are updated in real-time when new verifications are completed or when existing information is updated. The system continuously monitors for any changes that might affect your score.",
+            "Let us know and our team will look for other suitable marriage bureaus that better match your requirements.",
         },
       ],
     },
     {
-      category: "Trust Share",
+      category: "Pre-Marriage Verification",
       questions: [
         {
-          question: "What is Trust Share ?",
+          question: "What is pre-marriage verification?",
           answer:
-            "Trust Share  help you to select  which trust-details you want to  share with your potential partner.",
+            "It's a service where we connect you with professional, independent agencies to verify important details of a shortlisted proposal — such as identity, education, employment or background information — before you make your final decision.",
         },
         {
-          question: "How can I get  potential partner's email id?",
+          question: "Is verification done with the other person's consent?",
           answer:
-            "You can  ask your potential partner to share   email id  that he/she used to register in MyTrueSoulMate .",
+            "Yes. Verification of a shortlisted proposal's details is carried out with the consent of the person concerned, ensuring the process is transparent and respectful for everyone involved.",
         },
         {
-          question: "Can I   add/remove  potential partner's email id later ?",
+          question: "When should I request verification?",
           answer:
-            "Yes, you can add by clicking  button - Add Person  and Remove by  clicking on Delete button. you can add maximum 5 email id at a time and if you want to add more than 5 email id then you can send email to support team .",
-        },
-      ],
-    },
-
-    {
-      category: "Trust Connection",
-      questions: [
-        {
-          question: "What is Trust Connection ?",
-          answer:
-            "Trust Connection will show you Trust Share Details and Trust Score of your potential partner who added you in their Trust Share .",
-        },
-        {
-          question: "Why some details marked as Green  and Red color icon ",
-          answer:
-            "Green Color means   this details has been shared with you  by your potential partner  in the trust share  and Red Color means   this details has not been shared with you  by your potential partner  in the trust share .",
-        },
-        {
-          question: "How can I get  actual details  as  it showing only status of details shared  ?",
-          answer:
-            "Yes, you can add by clicking  button - Get All Details we will send you email  with actual  details for all Trust Connection .",
+            "You can request verification support once you have a shortlisted proposal and want additional confidence before proceeding towards marriage.",
         },
       ],
     },
@@ -138,39 +108,39 @@ export default function FAQSection() {
       category: "Privacy & Security",
       questions: [
         {
-          question: "Is my personal information secure?",
+          question: "Is my personal information kept confidential?",
           answer:
-            "Absolutely. We use bank-level encryption, secure data centers, and follow strict privacy protocols. Your information is encrypted both in transit and at rest. We never share your data without your explicit consent.",
+            "Yes. Your requirements and personal details are shared only with the marriage bureaus or verification agencies relevant to your case, and only to the extent necessary to assist you.",
         },
         {
-          question: "Who can see my trust score and information?",
+          question: "Who can see the requirements I share?",
           answer:
-            "You have complete control over your privacy settings. You can choose what information to share, with whom, and for how long. Recipients only see information you explicitly authorize them to view.",
+            "Only our internal team and the specific marriage bureaus or verification partners we connect you with, for the purpose of assisting your search, can see your requirements.",
         },
         {
-          question: "Can I delete my account and data?",
+          question: "Can I ask you to delete my information?",
           answer:
-            "Yes, you can delete your account anytime from your dashboard settings. Upon deletion, all your personal data will be permanently removed from our systems within 30 days, except for legally required records.",
+            "Yes, you can request deletion of your account and data anytime by contacting our support team, and we will remove it in line with our data retention policy.",
         },
       ],
     },
     {
-      category: "Technical Support",
+      category: "Support",
       questions: [
         {
-          question: "I forgot my password. How can I reset it?",
+          question: "How can I contact the MyTrueSoulMate team?",
           answer:
-            "Click 'Forgot Password' on the login page, enter your registered email address, and you'll receive a password reset link. Follow the instructions in the email to create a new password.",
+            "You can reach us anytime at support@mytruesoulmate.com, or use the 'Talk to Our Team' option on the website, and we'll respond as soon as possible.",
         },
         {
-          question: "How to share  document for verification ?",
+          question: "How long does it take to get matched with a marriage bureau?",
           answer:
-            "Our support team will  send you email with detailed instruction and documents required for verification process . You can reply to that email with scanned copies or clear photos of the requested documents. Ensure all details are visible and legible for smooth processing.",
+            "Timelines vary based on how specific your requirements are, but our team typically shares suitable marriage bureau options within a few business days of receiving your requirements.",
         },
         {
-          question: "How do I share my trust score with someone?",
+          question: "What if I have a complaint about a marriage bureau or verification service?",
           answer:
-            "Go to your dashboard, click 'Share Trust Score', enter the recipient's details, choose what information to share, set an expiration date, and send. The recipient will receive a secure link to view your verified information.",
+            "Please contact our support team with the details. We will look into the matter and assist in resolving it, and take it into account for future recommendations.",
         },
       ],
     },
@@ -191,8 +161,8 @@ export default function FAQSection() {
               Frequently Asked <span className="text-red-600">Questions</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Find answers to common questions about MyTrueSoulMate verification process, trust scores, privacy
-              settings, and more. Can't find what you're looking for? We're here to help.
+              Find answers to common questions about finding the right marriage bureau, sharing your requirements,
+              pre-marriage verification, and more. Can't find what you're looking for? We're here to help.
             </p>
           </div>
         </div>
@@ -224,7 +194,7 @@ export default function FAQSection() {
       </section>
 
       {/* Contact Support Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
+      <section id="talk-to-our-team" className="py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-lg">
@@ -234,7 +204,7 @@ export default function FAQSection() {
                     <MessageCircle className="h-8 w-8 text-red-600" />
                   </div>
                 </div>
-                <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
+                <h2 className="text-3xl font-bold mb-4">Talk To Our Team</h2>
                 <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
                   Our support team is here to help you with any questions or concerns. We typically respond within 24
                   hours.

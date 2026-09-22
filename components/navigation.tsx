@@ -203,18 +203,7 @@ export default function Navigation() {
                 Logout
               </Button>
             </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link href="/login">
-                <Button variant="ghost" className="text-sm font-medium">
-                  Log in
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button className="bg-red-600 hover:bg-red-700 text-white">Sign up</Button>
-              </Link>
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile Navigation */}
@@ -299,20 +288,7 @@ export default function Navigation() {
                         Logout
                       </Button>
                     </>
-                  ) : (
-                    <>
-                      <Link href="/login" onClick={() => setIsOpen(false)}>
-                        <Button variant="outline" className="w-full justify-center bg-transparent">
-                          Log in
-                        </Button>
-                      </Link>
-                      <Link href="/signup" onClick={() => setIsOpen(false)}>
-                        <Button className="w-full justify-center bg-red-600 hover:bg-red-700 text-white">
-                          Sign up
-                        </Button>
-                      </Link>
-                    </>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </SheetContent>
