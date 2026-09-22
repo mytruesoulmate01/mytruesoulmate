@@ -1,36 +1,38 @@
-import { User, Upload, TrendingUp, Share2, Users } from "lucide-react"
+import { ClipboardList, Building2, FileText, ShieldCheck, HeartHandshake } from "lucide-react"
 
 export default function ProcessSection() {
   const steps = [
     {
       number: 1,
-      icon: <User className="h-8 w-8 text-red-600" />,
-      title: "Create Your Profile",
-      description: "Sign up and create your profile with your personal information.",
+      icon: <ClipboardList className="h-8 w-8 text-red-600" />,
+      title: "Share Your Requirements",
+      description:
+        "Tell us your preferences, including community, religion, location, profession, family background and partner expectations.",
     },
     {
       number: 2,
-      icon: <Upload className="h-8 w-8 text-red-600" />,
-      title: "Submit Verification Documents",
-      description: "Share your education, employment, and background documents for verification.",
+      icon: <Building2 className="h-8 w-8 text-red-600" />,
+      title: "We Find Suitable Marriage Bureaus",
+      description: "Our team searches for marriage bureaus that best match your specific requirements.",
     },
     {
       number: 3,
-      icon: <TrendingUp className="h-8 w-8 text-red-600" />,
-      title: "Get Your Trust Score",
-      description: "Once verified, receive your trust score based on our comprehensive algorithm.",
+      icon: <FileText className="h-8 w-8 text-red-600" />,
+      title: "We Help You Register",
+      description: "We assist you in completing the registration process with each selected marriage bureau.",
     },
     {
       number: 4,
-      icon: <Share2 className="h-8 w-8 text-red-600" />,
-      title: "Share Your Trust Score",
-      description: "Share your trust score with potential partners",
+      icon: <ShieldCheck className="h-8 w-8 text-red-600" />,
+      title: "Verify Shortlisted Proposals",
+      description:
+        "If required, we connect you with professional pre-marriage investigation services before you make the final decision.",
     },
     {
       number: 5,
-      icon: <Users className="h-8 w-8 text-red-600" />,
-      title: "Build Trusted Connections",
-      description: "Connect with confidence —everyone’s profile is verified and secure.",
+      icon: <HeartHandshake className="h-8 w-8 text-red-600" />,
+      title: "Individual and Couple Counseling",
+      description: "Get access to counseling support that helps you take a more informed decision.",
     },
   ]
 
@@ -43,7 +45,8 @@ export default function ProcessSection() {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Our simple process helps you verify and share your trustworthiness in just a few steps.
+            Our team simplifies your marriage search—from finding suitable marriage bureaus to verifying shortlisted
+            proposals.
           </p>
         </div>
 

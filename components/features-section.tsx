@@ -1,37 +1,39 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Shield, TrendingUp, Share2, FileCheck, Lock, Award } from "lucide-react"
+import { ClipboardList, Building2, Network, UserCheck, ShieldCheck, FileSearch } from "lucide-react"
 
 export default function FeaturesSection() {
   const features = [
     {
-      icon: <Shield className="h-8 w-8 text-red-600" />,
-      title: "Comprehensive Verification",
-      description: "Verify your education, employment, and background information through our secure platform.",
+      icon: <ClipboardList className="h-8 w-8 text-red-600" />,
+      title: "Understand Your Requirements",
+      description:
+        "We understand your preferences for community, religion, location, profession, family background and lifestyle.",
     },
     {
-      icon: <TrendingUp className="h-8 w-8 text-red-600" />,
-      title: "Trust Score",
-      description: "Receive a quantifiable trust score based on your verified credentials and background checks.",
+      icon: <Building2 className="h-8 w-8 text-red-600" />,
+      title: "Suitable Marriage Bureaus",
+      description: "Get connected with marriage bureaus that specialize in profiles matching your requirements.",
     },
     {
-      icon: <Share2 className="h-8 w-8 text-red-600" />,
-      title: "Secure Sharing",
-      description: "Share your trust score and verified information securely with potential partners on any platform.",
+      icon: <Network className="h-8 w-8 text-red-600" />,
+      title: "Multiple Bureau Connections",
+      description:
+        "Reach relevant marriage bureaus through one platform instead of searching and registering everywhere.",
     },
     {
-      icon: <FileCheck className="h-8 w-8 text-red-600" />,
-      title: "Tamper-Proof Verification",
-      description: "All verifications are cryptographically secured to prevent tampering or falsification.",
+      icon: <UserCheck className="h-8 w-8 text-red-600" />,
+      title: "Personalized Assistance",
+      description: "Our team guides you in selecting suitable marriage bureaus for your partner search.",
     },
     {
-      icon: <Lock className="h-8 w-8 text-red-600" />,
-      title: "Privacy Control",
-      description: "You control who sees your information and how much is shared with each recipient.",
+      icon: <ShieldCheck className="h-8 w-8 text-red-600" />,
+      title: "Consent-Based Verification",
+      description: "Verify important details of a shortlisted proposal with the other person's consent.",
     },
     {
-      icon: <Award className="h-8 w-8 text-red-600" />,
-      title: "Premium Verification",
-      description: "Enhanced verification options for those seeking additional trust assurance.",
+      icon: <FileSearch className="h-8 w-8 text-red-600" />,
+      title: "Independent Background Check",
+      description: "Get professional pre-marriage investigation support when deeper verification is required.",
     },
   ]
 
@@ -41,11 +43,11 @@ export default function FeaturesSection() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trust-Based Features for <span className="text-red-600">Marriage Success</span>
+              Everything You Need to Find Your <span className="text-red-600">True Soulmate</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our platform offers comprehensive tools to verify your background and build trust for serious marriage
-              connections.
+              From selecting the right marriage bureau to verifying a shortlisted proposal, we support you at every
+              important step.
             </p>
           </div>
 
