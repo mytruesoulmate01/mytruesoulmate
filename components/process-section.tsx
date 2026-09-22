@@ -18,7 +18,7 @@ export default function ProcessSection() {
     {
       number: 3,
       icon: <FileText className="h-8 w-8 text-red-600" />,
-      title: "We Help You Register",
+      title: "We Help You Register with Multiple Marriage Bureaus",
       description: "We assist you in completing the registration process with each selected marriage bureau.",
     },
     {
